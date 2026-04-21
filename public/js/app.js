@@ -11,7 +11,19 @@
     }
 })();
 
-const API_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000/api' : '/api';
+const API_URL = '/api'; 
+
+// LÓGICA DE SEGURIDAD PARA PARSEO DE USUARIO (Blindaje contra estados indefinidos)
+function getSafeUser() {
+    try {
+        const userData = localStorage.getItem('user');
+        if (!userData || userData === 'undefined') return null;
+        return JSON.parse(userData);
+    } catch (e) {
+        console.warn('Falla en recuperación de sesión:', e);
+        return null;
+    }
+}
 
 // Utilidades del DOM
 function toggleView(viewId) {
@@ -4813,7 +4825,8 @@ async function fetchSignedForms() {
             return;
         }
 
-        const userRole = (JSON.parse(localStorage.getItem('user')) || {}).rol || 'GUEST';
+        const user = getSafeUser();
+        const userRole = user ? user.rol : 'GUEST';
 
         data.forEach(item => {
             const tr = document.createElement('tr');
@@ -4968,7 +4981,8 @@ async function fetchPersonalDocs() {
             return;
         }
 
-        const userRole = (JSON.parse(localStorage.getItem('user')) || {}).rol || 'GUEST';
+        const user = getSafeUser();
+        const userRole = user ? user.rol : 'GUEST';
 
         data.forEach(doc => {
             const tr = document.createElement('tr');
