@@ -37,10 +37,11 @@ router.post('/upload', authenticateToken, uploadForm.single('archivo'), async (r
             let query = `UPDATE formularios SET tipo = $1, prefijo = $2, fecha_carga = CURRENT_TIMESTAMP, campos_configurados = $4, html_content = $5 WHERE id = $3`;
             let params = [tipo, prefijo, id, campos_configurados, html_content];
             
-            if (req.file) { // Por si acaso algún fallback sube un archivo
+            if (req.file) { 
                 const rutaUrl = '/uploads/formularios/' + req.file.filename;
-                query = `UPDATE formularios SET tipo = $1, prefijo = $2, nombre_archivo = $3, ruta_archivo = $4, fecha_carga = CURRENT_TIMESTAMP, campos_configurados = $6, html_content = $7 WHERE id = $5`;
-                params = [tipo, prefijo, req.file.originalname, rutaUrl, id, campos_configurados, html_content];
+                const archivoBase64 = fs.readFileSync(req.file.path).toString('base64');
+                query = `UPDATE formularios SET tipo = $1, prefijo = $2, nombre_archivo = $3, ruta_archivo = $4, fecha_carga = CURRENT_TIMESTAMP, campos_configurados = $6, html_content = $7, archivo_base64 = $8 WHERE id = $5`;
+                params = [tipo, prefijo, req.file.originalname, rutaUrl, id, campos_configurados, html_content, archivoBase64];
             }
             
             await db.query(query, params);
@@ -60,7 +61,8 @@ router.post('/upload', authenticateToken, uploadForm.single('archivo'), async (r
                 return res.status(400).json({ error: 'Debe adjuntar obligatoriamente un archivo de referencia (PDF) para crear la plantilla.' });
             }
 
-            await db.query(`INSERT INTO formularios (tipo, nombre_archivo, ruta_archivo, prefijo, campos_configurados, html_content) VALUES ($1, $2, $3, $4, $5, $6)`, [tipo, nombreArchivo, rutaUrl, prefijo, campos_configurados, html_content]);
+            const archivoBase64 = fs.readFileSync(req.file.path).toString('base64');
+            await db.query(`INSERT INTO formularios (tipo, nombre_archivo, ruta_archivo, prefijo, campos_configurados, html_content, archivo_base64) VALUES ($1, $2, $3, $4, $5, $6, $7)`, [tipo, nombreArchivo, rutaUrl, prefijo, campos_configurados, html_content, archivoBase64]);
             
             // Bitácora
             await db.query(`INSERT INTO bitacora (id_usuario, accion, detalle) VALUES ($1, $2, $3)`,
@@ -119,12 +121,22 @@ router.get('/view/:id', authenticateToken, async (req, res) => {
         const fullPath = path.resolve(__dirname, '..', rutaLimpia);
         
         if (!fs.existsSync(fullPath)) {
-            console.error(`[PDF_VIEW] ALERTA: El archivo físico no existe en ${fullPath}. Posible reinicio de servidor.`);
-            return res.status(404).json({ 
-                error: 'Archivo físico no encontrado en el servidor',
-                detalle: 'El servidor se reinició y los archivos temporales se limpiaron. Por favor, vuelva a subir la plantilla en la sección de Plantillas.',
-                codigo: 'FILE_NOT_FOUND_AFTER_RESTART'
-            });
+            console.log(`[RECOVERY_ENGINE] El archivo físico no existe. Intentando reconstrucción desde Base64...`);
+            const recovery = await db.query('SELECT archivo_base64 FROM formularios WHERE id = $1', [id]);
+            
+            if (recovery.rows.length > 0 && recovery.rows[0].archivo_base64) {
+                const dir = path.dirname(fullPath);
+                if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+                fs.writeFileSync(fullPath, Buffer.from(recovery.rows[0].archivo_base64, 'base64'));
+                console.log(`[RECOVERY_ENGINE] ÉXITO: Archivo reconstruido en ${fullPath}`);
+            } else {
+                console.error(`[RECOVERY_ENGINE] FALLO: No hay backup Base64 para esta plantilla.`);
+                return res.status(404).json({ 
+                    error: 'Error de persistencia persistente',
+                    detalle: 'No fue posible reconstruir el archivo. Por favor, vuelva a subir la plantilla.',
+                    codigo: 'FATAL_FILE_LOSS'
+                });
+            }
         }
         
         res.setHeader('Content-Type', 'application/pdf');

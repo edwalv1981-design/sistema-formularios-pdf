@@ -2,35 +2,17 @@ const db = require('./db');
 const bcrypt = require('bcryptjs');
 
 async function initialize() {
-    console.log('--- SINCRONIZACIÓN MAESTRA DE ESQUEMAS (TOTAL SYSTEM SYNC) ---');
+    console.log('--- BLINDAJE DE PERSISTENCIA TOTAL (BASE64 BACKUP) ---');
     try {
-        // 1. TABLA: DOCUMENTOS PERSONALES
-        await db.query(`
-            CREATE TABLE IF NOT EXISTS documentos_personales (
-                id SERIAL PRIMARY KEY,
-                user_id INTEGER,
-                tipo TEXT,
-                nombre_archivo TEXT,
-                ruta_archivo TEXT,
-                fecha_carga TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                estado_vigencia TEXT DEFAULT 'NO DETECTADO',
-                fecha_expiracion DATE
-            )
-        `);
+        // 1. ACTUALIZAR TABLA FORMULARIOS PARA PERSISTENCIA BINARIA
+        try {
+            await db.query('ALTER TABLE formularios ADD COLUMN archivo_base64 TEXT');
+            console.log('✓ Columna archivo_base64 añadida a formularios.');
+        } catch (e) {
+            // Ya existe
+        }
 
-        // 2. TABLA: FORMULARIOS FIRMADOS
-        await db.query(`
-            CREATE TABLE IF NOT EXISTS formularios_firmados (
-                id SERIAL PRIMARY KEY,
-                user_id INTEGER,
-                nombre_archivo TEXT,
-                ruta_archivo TEXT,
-                is_valid BOOLEAN DEFAULT FALSE,
-                fecha_carga TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        `);
-
-        // 3. TABLA: DOCUMENTO_EDICIONES (Estructura oficial para Editor Maestro)
+        // 2. SINCRONIZACIÓN DE RESTO DE TABLAS
         await db.query(`
             CREATE TABLE IF NOT EXISTS documento_ediciones (
                 id SERIAL PRIMARY KEY,
@@ -44,7 +26,6 @@ async function initialize() {
             )
         `);
 
-        // 4. TABLA: BITÁCORA (Historial inmutable)
         await db.query(`
             CREATE TABLE IF NOT EXISTS bitacora (
                 id SERIAL PRIMARY KEY,
@@ -56,37 +37,14 @@ async function initialize() {
             )
         `);
 
-        // 5. REPARACIÓN DE COLUMNAS (Mantenimiento Proactivo)
-        const fixColumns = [
-            ['bitacora', 'id_empresa_contexto', 'INTEGER'],
-            ['documento_ediciones', 'estado_firma', 'TEXT'],
-            ['documento_ediciones', 'ruta_archivo_firmado', 'TEXT']
-        ];
+        // 3. ASEGURAR COLUMNAS DE EDICIONES
+        try { await db.query('ALTER TABLE documento_ediciones ADD COLUMN estado_firma TEXT'); } catch(e){}
+        try { await db.query('ALTER TABLE documento_ediciones ADD COLUMN ruta_archivo_firmado TEXT'); } catch(e){}
 
-        for (const [table, col, type] of fixColumns) {
-            try {
-                await db.query(`ALTER TABLE ${table} ADD COLUMN ${col} ${type}`);
-                console.log(`✓ Columna añadida: ${table}.${col}`);
-            } catch (e) {
-                // Ya existe, todo bien
-            }
-        }
-
-        // 6. GARANTIZAR ACCESO MASTER
-        const salt = 10;
-        const pass = await bcrypt.hash('Master2026*', salt);
-        await db.query(`
-            UPDATE usuarios SET 
-                estado = 'ACTIVO', 
-                aprobado = TRUE,
-                password_hash = $1
-            WHERE identificacion = 'edumaster'
-        `, [pass]);
-
-        console.log('--- SINCRONIZACIÓN COMPLETADA: SISTEMA OPERATIVO AL 100% ---');
+        console.log('--- BLINDAJE COMPLETADO: EL SISTEMA AHORA ES RESILIENTE A REINICIOS ---');
         process.exit(0);
     } catch (err) {
-        console.error('❌ FALLO EN SINCRONIZACIÓN:', err);
+        console.error('❌ ERROR EN BLINDAJE:', err);
         process.exit(1);
     }
 }
