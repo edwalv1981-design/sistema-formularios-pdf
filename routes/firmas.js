@@ -65,11 +65,15 @@ router.post('/upload', authenticateToken, upload.single('archivo'), async (req, 
 // LISTAR FORMULARIOS FIRMADOS
 router.get('/', authenticateToken, async (req, res) => {
     try {
-        const userId = req.user.id;
-        const result = await db.query(
-            'SELECT * FROM formularios_firmados WHERE user_id = $1 ORDER BY fecha_carga DESC',
-            [userId]
-        );
+        let sql = 'SELECT * FROM formularios_firmados WHERE user_id = $1 ORDER BY fecha_carga DESC';
+        let params = [req.user.id];
+        
+        if (req.user.rol === 'MASTER') {
+            sql = 'SELECT f.*, u.nombres_completos as subido_por FROM formularios_firmados f JOIN usuarios u ON f.user_id = u.id ORDER BY f.fecha_carga DESC';
+            params = [];
+        }
+        
+        const result = await db.query(sql, params);
         res.json(result.rows);
     } catch (err) {
         res.status(500).json({ error: 'Error al listar' });
@@ -124,7 +128,8 @@ router.get('/view/:id', authenticateToken, async (req, res) => {
             }
         }
         
-        res.setHeader('Content-Disposition', `inline; filename="${info.nombre_archivo}"`);
+        const safeName = encodeURIComponent(info.nombre_archivo);
+        res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${safeName}`);
         res.setHeader('Content-Type', 'application/pdf');
         fs.createReadStream(fullPath).pipe(res);
     } catch (err) {

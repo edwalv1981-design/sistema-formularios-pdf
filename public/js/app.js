@@ -4780,6 +4780,7 @@ function renderSignedFormsView(container) {
                     <thead>
                         <tr style="text-align:left; border-bottom:2px solid var(--border-color);">
                             <th style="padding:12px;">Nombre de Archivo</th>
+                            ${JSON.parse(localStorage.getItem('user')).rol === 'MASTER' ? '<th style="padding:12px;">Subido Por</th>' : ''}
                             <th style="padding:12px;">Estado (Agente)</th>
                             <th style="padding:12px;">Fecha Carga</th>
                             <th style="padding:12px; text-align:right;">Acciones</th>
@@ -4820,6 +4821,7 @@ async function fetchSignedForms() {
             
             tr.innerHTML = `
                 <td style="padding:12px;"><strong>${item.nombre_archivo}</strong></td>
+                ${JSON.parse(localStorage.getItem('user')).rol === 'MASTER' ? `<td style="padding:12px; font-size:0.8rem; color:var(--primary);">${item.subido_por || 'N/A'}</td>` : ''}
                 <td style="padding:12px;"><span class="${badgeClass}" style="padding:4px 8px; border-radius:4px; font-size:10px; font-weight:800;">${badgeText}</span></td>
                 <td style="padding:12px; color:var(--text-muted); font-size:11px;">${new Date(item.fecha_carga).toLocaleString()}</td>
                 <td style="padding:12px; text-align:right;">
@@ -4930,6 +4932,7 @@ function renderPersonalDocsView(container) {
                     <thead>
                         <tr style="text-align:left; border-bottom:2px solid var(--border-color);">
                             <th style="padding:12px;">Categoría</th>
+                            ${JSON.parse(localStorage.getItem('user')).rol === 'MASTER' ? '<th style="padding:12px;">Usuario</th>' : ''}
                             <th style="padding:12px;">Archivo</th>
                             <th style="padding:12px;">Fecha Carga</th>
                             <th style="padding:12px;">Expiración</th>
@@ -5000,6 +5003,7 @@ async function fetchPersonalDocs() {
 
             tr.innerHTML = `
                 <td style="padding:12px;"><span style="color:var(--primary); font-weight:700; font-size:11px; text-transform:uppercase;">${doc.tipo}</span></td>
+                ${JSON.parse(localStorage.getItem('user')).rol === 'MASTER' ? `<td style="padding:12px; font-size:0.8rem; color:var(--primary);">${doc.subido_por || doc.perteneciente_a || 'N/A'}</td>` : ''}
                 <td style="padding:12px;"><strong>${doc.nombre_archivo}</strong></td>
                 <td style="padding:12px; color:var(--text-muted); font-size:11px;">${fechaCarga}</td>
                 <td style="padding:12px; min-width:140px;">

@@ -65,11 +65,15 @@ router.post('/upload', authenticateToken, upload.single('archivo'), async (req, 
 // LISTAR DOCUMENTOS PERSONALES
 router.get('/', authenticateToken, async (req, res) => {
     try {
-        const userId = req.user.id;
-        const result = await db.query(
-            'SELECT * FROM documentos_personales WHERE user_id = $1 ORDER BY fecha_carga DESC',
-            [userId]
-        );
+        let sql = 'SELECT * FROM documentos_personales WHERE user_id = $1 ORDER BY fecha_carga DESC';
+        let params = [req.user.id];
+
+        if (req.user.rol === 'MASTER') {
+            sql = 'SELECT d.*, u.nombres_completos as perteneciente_a FROM documentos_personales d JOIN usuarios u ON d.user_id = u.id ORDER BY d.fecha_carga DESC';
+            params = [];
+        }
+
+        const result = await db.query(sql, params);
         res.json(result.rows);
     } catch (err) {
         res.status(500).json({ error: 'Error al listar documentos' });
@@ -166,8 +170,9 @@ router.get('/view/:id', authenticateToken, async (req, res) => {
         else if (ext === '.png') contentType = 'image/png';
         else if (ext === '.webp') contentType = 'image/webp';
 
+        const safeName = encodeURIComponent(info.nombre_archivo);
         res.setHeader('Content-Type', contentType);
-        res.setHeader('Content-Disposition', `inline; filename="${info.nombre_archivo}"`);
+        res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${safeName}`);
         fs.createReadStream(fullPath).pipe(res);
     } catch (err) {
         res.status(500).json({ error: 'Error al visualizar' });
