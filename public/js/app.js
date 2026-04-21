@@ -19,11 +19,20 @@ function getSafeUser() {
         const userData = localStorage.getItem('user');
         if (!userData || userData === 'undefined') return null;
         return JSON.parse(userData);
-    } catch (e) {
+} catch (e) {
         console.warn('Falla en recuperación de sesión:', e);
         return null;
     }
 }
+
+// GESTIÓN DE ERRORES GLOBAL (Diagnóstico en Producción)
+window.onerror = function(msg, url, line, col, error) {
+    console.error(`[CRITICAL_UI_ERROR] ${msg} en ${url}:${line}:${col}`, error);
+    if(typeof showCustomModal === 'function') {
+        showCustomModal('Error Crítico de Aplicación', `Se detectó una falla técnica: ${msg}. Por favor, refresque la página (F5).`, 'error');
+    }
+    return false;
+};
 
 // Utilidades del DOM
 function toggleView(viewId) {
@@ -4808,21 +4817,27 @@ function renderSignedFormsView(container) {
 }
 
 async function fetchSignedForms() {
+    console.log("[DEBUG] Ejecutando fetchSignedForms...");
+    const tbody = document.getElementById('signed-forms-table-body');
+    if(!tbody) return;
+    
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px;">Cargando repositorio seguro...</td></tr>';
+    
     try {
-        const response = await fetch(`/api/formularios-firmados`, {
+        const response = await fetch('/api/formularios-firmados', {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
-        const data = await response.json();
-        if(!response.ok) {
-            throw new Error(data.detalle || data.error || 'Error desconocido en servidor');
-        }
         
-        const tbody = document.getElementById('signed-forms-table-body');
-        if(!tbody) return;
+        if (!response.ok) {
+            const errData = await response.json();
+            throw new Error(errData.detalle || errData.error || 'Falla de comunicación');
+        }
+
+        const data = await response.json();
         tbody.innerHTML = '';
 
-        if(!Array.isArray(data) || data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:40px; color:var(--text-muted);">No existe información.</td></tr>';
+        if (!Array.isArray(data) || data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:40px; color:var(--text-muted);">No existe información el repositorio.</td></tr>';
             return;
         }
 
@@ -4836,8 +4851,8 @@ async function fetchSignedForms() {
             const badgeText = item.is_valid ? 'FIRMA VÁLIDA' : 'SIN FIRMA';
             
             tr.innerHTML = `
-                <td style="padding:12px;"><strong>${item.nombre_archivo}</strong></td>
-                ${userRole === 'MASTER' ? `<td style="padding:12px; font-size:0.8rem; color:var(--primary);">${item.subido_por || 'N/A'}</td>` : ''}
+                <td style="padding:12px;"><strong>${item.nombre_archivo || 'Documento'}</strong></td>
+                ${userRole === 'MASTER' ? `<td style="padding:12px; font-size:0.8rem; color:var(--primary); font-weight:700;">${item.subido_por || 'N/A'}</td>` : ''}
                 <td style="padding:12px;"><span class="${badgeClass}" style="padding:4px 8px; border-radius:4px; font-size:10px; font-weight:800;">${badgeText}</span></td>
                 <td style="padding:12px; color:var(--text-muted); font-size:11px;">${new Date(item.fecha_carga).toLocaleString()}</td>
                 <td style="padding:12px; text-align:right;">
@@ -4848,7 +4863,8 @@ async function fetchSignedForms() {
             tbody.appendChild(tr);
         });
     } catch (err) {
-        showCustomModal('Error', 'Falla al listar formularios firmados. Detalle: ' + err.message, 'error');
+        console.error("[ERROR_FETCH_SIGNED]", err);
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color:#ef4444;">Error técnico: ${err.message}</td></tr>`;
     }
 }
 
@@ -4965,21 +4981,27 @@ function renderPersonalDocsView(container) {
 }
 
 async function fetchPersonalDocs() {
+    console.log("[DEBUG] Ejecutando fetchPersonalDocs...");
+    const tbody = document.getElementById('personal-docs-table-body');
+    if(!tbody) return;
+
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px;">Accediendo a documentación segura...</td></tr>';
+
     try {
-        const response = await fetch(`/api/documentacion-personal`, {
+        const response = await fetch('/api/documentacion-personal', {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
-        const data = await response.json();
-        if(!response.ok) {
-            throw new Error(data.detalle || data.error || 'Error desconocido en servidor');
+        
+        if (!response.ok) {
+            const errData = await response.json();
+            throw new Error(errData.detalle || errData.error || 'Falla de comunicación');
         }
 
-        const tbody = document.getElementById('personal-docs-table-body');
-        if(!tbody) return;
+        const data = await response.json();
         tbody.innerHTML = '';
 
-        if(!Array.isArray(data) || data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:40px; color:var(--text-muted);">No existe información.</td></tr>';
+        if (!Array.isArray(data) || data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:40px; color:var(--text-muted);">No existe documentación cargada.</td></tr>';
             return;
         }
 
@@ -4990,43 +5012,16 @@ async function fetchPersonalDocs() {
             const tr = document.createElement('tr');
             tr.style.borderBottom = '1px solid var(--border-color)';
             
-            // UTILIDAD DE PARSEO SEGURO PARA FECHAS UTC A DD/MM/YYYY
-            const formatSafeDate = (dateStr) => {
-                if(!dateStr) return '---';
-                const d = new Date(dateStr);
-                return `${String(d.getUTCDate()).padStart(2,'0')}/${String(d.getUTCMonth()+1).padStart(2,'0')}/${d.getUTCFullYear()}`;
-            };
-            
-            const fechaCarga = formatSafeDate(doc.fecha_carga);
-            
-            // LÓGICA DE EDICIÓN MANUAL V19 & FANTASMA V21
-            let expirationDisplay = '';
-            if (doc.fecha_expiracion) {
-                let alertIcon = '';
-                if (doc.estado_vigencia === 'VENCIDO') {
-                    alertIcon = '<i class="ph ph-warning-circle" style="color:#ef4444; margin-left:6px; font-size:16px;" title="Vencido"></i>';
-                } else if (doc.estado_vigencia === 'PRÓXIMO_A_VENCER') {
-                    alertIcon = '<i class="ph ph-clock-countdown" style="background:linear-gradient(135deg, #f59e0b, #d97706); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-left:6px; font-size:16px;" title="Próximo a Vencer"></i>';
-                }
-
-                expirationDisplay = `<div style="display:flex; align-items:center;">
-                    <span style="font-weight:700; color:var(--text-main);">${formatSafeDate(doc.fecha_expiracion)}</span>
-                    ${alertIcon}
-                    <button class="action-btn" onclick="toggleEditDate('${doc.id}')" style="padding:2px; font-size:12px; margin-left:8px;"><i class="ph ph-pencil-simple"></i></button>
-                </div>`;
-            } else {
-                expirationDisplay = `<div style="display:flex; align-items:center; gap:5px;">
-                    <input type="date" id="date-input-${doc.id}" style="padding:4px; font-size:10px; background:rgba(0,0,0,0.2); border:1px solid var(--primary); border-radius:4px; color:var(--text-main);">
-                    <button class="btn-primary" onclick="updateManualExpiration('${doc.id}', document.getElementById('date-input-${doc.id}').value)" style="padding:4px 8px; font-size:10px; border-radius:4px;"><i class="ph ph-check"></i></button>
-                </div>`;
-            }
+            const expirationDisplay = doc.fecha_expiracion 
+                ? `<span style="color:#10b981; font-weight:700;">${new Date(doc.fecha_expiracion).toLocaleDateString()}</span>` 
+                : `<span style="color:var(--text-muted); font-style:italic;">No definida</span> <button class="action-btn" onclick="toggleEditDate(${doc.id})" title="Añadir Fecha"><i class="ph ph-calendar-plus" style="color:var(--primary);"></i></button>`;
 
             tr.innerHTML = `
-                <td style="padding:12px;"><span style="color:var(--primary); font-weight:700; font-size:11px; text-transform:uppercase;">${doc.tipo}</span></td>
-                ${userRole === 'MASTER' ? `<td style="padding:12px; font-size:0.8rem; color:var(--primary);">${doc.subido_por || doc.perteneciente_a || 'N/A'}</td>` : ''}
-                <td style="padding:12px;"><strong>${doc.nombre_archivo}</strong></td>
-                <td style="padding:12px; color:var(--text-muted); font-size:11px;">${fechaCarga}</td>
-                <td style="padding:12px; min-width:140px;">
+                <td style="padding:12px;"><span class="badge-blue" style="padding:4px 8px; border-radius:4px; font-size:10px; font-weight:800; background:rgba(59,130,246,0.1); color:#60a5fa;">${doc.tipo}</span></td>
+                ${userRole === 'MASTER' ? `<td style="padding:12px; font-size:0.8rem; color:var(--primary); font-weight:700;">${doc.perteneciente_a || 'N/A'}</td>` : ''}
+                <td style="padding:12px; font-size:11px; max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${doc.nombre_archivo}</td>
+                <td style="padding:12px; color:var(--text-muted); font-size:11px;">${new Date(doc.fecha_carga).toLocaleString()}</td>
+                <td style="padding:12px;">
                     <div id="date-container-${doc.id}">${expirationDisplay}</div>
                 </td>
                 <td style="padding:12px; text-align:right;">
@@ -5038,7 +5033,8 @@ async function fetchPersonalDocs() {
             tbody.appendChild(tr);
         });
     } catch (err) {
-        showCustomModal('Error', 'Falla al listar documentos personales. Detalle: ' + err.message, 'error');
+        console.error("[ERROR_FETCH_PERSONAL]", err);
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:#ef4444;">Error técnico: ${err.message}</td></tr>`;
     }
 }
 

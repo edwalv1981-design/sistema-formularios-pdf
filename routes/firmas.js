@@ -62,8 +62,8 @@ router.post('/upload', authenticateToken, upload.single('archivo'), async (req, 
             isValid: isValid 
         });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Falla en el Agente de Validación' });
+        console.error('[SIGN_UPLOAD_FATAL]', err);
+        res.status(500).json({ error: 'Falla al procesar formulario firmado', detalle: err.message });
     }
 });
 
