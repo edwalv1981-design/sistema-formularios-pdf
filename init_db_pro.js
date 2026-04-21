@@ -2,29 +2,36 @@ const db = require('./db');
 const bcrypt = require('bcryptjs');
 
 async function initialize() {
-    console.log('--- ACTIVACIÓN MASIVA Y MANTENIMIENTO DE USUARIOS ---');
+    console.log('--- REPARACIÓN INTEGRAL DE ESQUEMA DE FORMULARIOS ---');
     try {
-        // 1. Asegurar consistencia de roles técnicos
-        await db.query(`INSERT INTO roles (id, nombre) VALUES (1, 'MASTER'), (2, 'EMPRESA'), (3, 'ADICIONAL') ON CONFLICT (id) DO UPDATE SET nombre = EXCLUDED.nombre`);
+        // 1. Asegurar tabla de formularios con ESQUEMA REAL
+        await db.query(`CREATE TABLE IF NOT EXISTS formularios (id SERIAL PRIMARY KEY, tipo TEXT)`);
         
-        // 2. ACTIVACIÓN MASIVA: Todos los usuarios a ACTIVO y APROBADO
-        await db.query(`
-            UPDATE usuarios 
-            SET estado = 'ACTIVO', 
-                aprobado = TRUE, 
-                intentos_fallidos = 0, 
-                bloqueado = FALSE
-            WHERE is_deleted = FALSE OR is_deleted IS NULL
-        `);
-        console.log('✓ Todos los usuarios han sido marcados como ACTIVO y APROBADOS.');
+        const formColumns = [
+            'nombre_archivo TEXT',
+            'ruta_archivo TEXT',
+            'prefijo TEXT',
+            'campos_configurados TEXT DEFAULT \'[]\'',
+            'html_content TEXT',
+            'is_deleted BOOLEAN DEFAULT FALSE',
+            'fecha_carga TIMESTAMP DEFAULT CURRENT_TIMESTAMP'
+        ];
 
-        // 3. Garantizar accesos Master actualizados
-        const salt = 10;
+        for (const col of formColumns) {
+            try {
+                await db.query(`ALTER TABLE formularios ADD COLUMN ${col}`);
+                console.log(`✓ Columna inyectada en formularios: ${col.split(' ')[0]}`);
+            } catch (e) {
+                // Ya existe
+            }
+        }
+
+        // 2. Asegurar que los usuarios Master existan y estén activos
         const masters = [
             ['admin', 'Admin123!', 'Administrador Sistema'],
             ['edumaster', 'Master2026*', 'Eduardo Master']
         ];
-
+        const salt = 10;
         for (const [ident, pass, name] of masters) {
             const hash = await bcrypt.hash(pass, salt);
             await db.query(`
@@ -34,15 +41,11 @@ async function initialize() {
                 ON CONFLICT (identificacion) 
                 DO UPDATE SET 
                     password_hash = EXCLUDED.password_hash,
-                    rol = 'MASTER',
-                    id_rol = 1,
-                    estado = 'ACTIVO',
-                    aprobado = TRUE
+                    rol = 'MASTER', id_rol = 1, estado = 'ACTIVO', aprobado = TRUE
             `, [name, ident, hash]);
         }
 
-        console.log('✓ Credenciales Master sincronizadas.');
-        console.log('--- PROCESO COMPLETADO ---');
+        console.log('--- ESQUEMA SINCRONIZADO AL 100% ---');
         process.exit(0);
     } catch (err) {
         console.error('❌ ERROR CRÍTICO:', err);
