@@ -12,11 +12,26 @@ const authenticateToken = (req, res, next) => {
     return res.sendStatus(401);
   }
 
-  jwt.verify(token, process.env.JWT_SECRET || 'tu_secreto_super_seguro_aqui', (err, user) => {
+  jwt.verify(token, process.env.JWT_SECRET || 'tu_secreto_super_seguro_aqui', async (err, user) => {
     if (err) {
       console.error(`[AUTH_FAIL] Error JWT (${err.name}): ${err.message} en ${req.method} ${req.url}`);
       return res.sendStatus(403);
     }
+    
+    // Verificación de Sesión Única (Kick-out)
+    try {
+        const db = require('../db');
+        const sessionCheck = await db.query('SELECT token_sesion_activa FROM usuarios WHERE id = $1', [user.id]);
+        if (sessionCheck.rows.length === 0 || (sessionCheck.rows[0].token_sesion_activa && sessionCheck.rows[0].token_sesion_activa !== token)) {
+            return res.status(401).json({ 
+                error: 'SESION_INVALIDA', 
+                detalle: 'Su sesión ha sido iniciada en otro equipo. Por seguridad, esta conexión se ha cerrado.' 
+            });
+        }
+    } catch (dbErr) {
+        console.error('[AUTH_DB_CHECK_FAIL]', dbErr);
+    }
+
     req.user = user;
     next();
   });

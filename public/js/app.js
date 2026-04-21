@@ -1,5 +1,16 @@
 // app.js
 
+// --- POLÍTICA DE SEGURIDAD EXTREMA: ANTI-RELOAD (F5 Redirect to Login) ---
+(function() {
+    const navEntries = performance.getEntriesByType('navigation');
+    if (navEntries.length > 0 && navEntries[0].type === 'reload') {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        sessionStorage.clear();
+        console.warn("[SECURITY] Reload detected. Session invalidated.");
+    }
+})();
+
 const API_URL = (window.location.protocol === 'file:') ? 'http://localhost:3000/api' : '/api';
 
 // Utilidades del DOM

@@ -88,8 +88,6 @@ router.post('/login', async (req, res) => {
 
     // Generar Session ID Único
     const newSessionId = Math.random().toString(36).substring(7);
-    await db.query(`UPDATE usuarios SET session_id = $1 WHERE id = $2`, [newSessionId, user.id]);
-
     // Generar Token
     const payload = {
       id: user.id,
@@ -100,6 +98,10 @@ router.post('/login', async (req, res) => {
     };
 
     const token = jwt.sign(payload, process.env.JWT_SECRET || 'tu_secreto_super_seguro_aqui', { expiresIn: '8h' });
+
+    // Guardar nuevo Token como Sesión Única Activa (Kick-out proactivo)
+    await db.query(`UPDATE usuarios SET token_sesion_activa = $1, session_id = $2, ultima_actividad = NOW() WHERE id = $3`, 
+      [token, newSessionId, user.id]);
 
     res.json({ token, user: payload });
   } catch (error) {

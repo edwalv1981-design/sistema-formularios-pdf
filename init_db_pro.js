@@ -2,49 +2,58 @@ const db = require('./db');
 const bcrypt = require('bcryptjs');
 
 async function initialize() {
-    console.log('--- BLINDAJE DE PERSISTENCIA TOTAL (BASE64 BACKUP) ---');
+    console.log('--- REFUERZO DE SEGURIDAD Y ESTADOS ---');
     try {
-        // 1. ACTUALIZAR TABLA FORMULARIOS PARA PERSISTENCIA BINARIA
+        // 1. COLUMNA PARA CONTROL DE SESIÓN ÚNICA
         try {
-            await db.query('ALTER TABLE formularios ADD COLUMN archivo_base64 TEXT');
-            console.log('✓ Columna archivo_base64 añadida a formularios.');
-        } catch (e) {
-            // Ya existe
-        }
+            await db.query('ALTER TABLE usuarios ADD COLUMN token_sesion_activa TEXT');
+            console.log('✓ Control de sesión única habilitado.');
+        } catch (e) {}
 
-        // 2. SINCRONIZACIÓN DE RESTO DE TABLAS
+        // 2. SINCRONIZACIÓN DE ESQUEMAS PREVIOS
         await db.query(`
-            CREATE TABLE IF NOT EXISTS documento_ediciones (
+            CREATE TABLE IF NOT EXISTS formularios (
                 id SERIAL PRIMARY KEY,
-                user_id INTEGER,
-                plantilla_id INTEGER,
-                nombre_archivo_original TEXT,
-                datos_json JSONB DEFAULT '{}',
-                estado_firma TEXT DEFAULT 'PENDIENTE',
-                ruta_archivo_firmado TEXT,
-                fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                tipo TEXT,
+                prefijo TEXT,
+                nombre_archivo TEXT,
+                ruta_archivo TEXT,
+                archivo_base64 TEXT,
+                is_deleted BOOLEAN DEFAULT FALSE,
+                fecha_carga TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
+        
+        try { await db.query('ALTER TABLE formularios ADD COLUMN archivo_base64 TEXT'); } catch(e){}
+
+        // 3. ASEGURAR QUE LOS ADMINS EXISTENTES ESTÉN ACTIVOS
+        await db.query(`
+            UPDATE usuarios 
+            SET estado = 'ACTIVO', aprobado = true 
+            WHERE rol IN ('MASTER', 'EMPRESA')
+        `);
+        console.log('✓ Administradores y Empresas activados masivamente.');
+
+        // 4. GARANTIZAR USUARIOS MAESTROS (edumaster y admin)
+        const salt = 10;
+        const passEdu = await bcrypt.hash('Master2026*', salt);
+        const passAdmin = await bcrypt.hash('Admin123!', salt);
 
         await db.query(`
-            CREATE TABLE IF NOT EXISTS bitacora (
-                id SERIAL PRIMARY KEY,
-                id_usuario INTEGER,
-                id_empresa_contexto INTEGER,
-                accion TEXT,
-                detalle TEXT,
-                fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        `);
+            INSERT INTO usuarios (nombres_completos, identificacion, password_hash, rol, id_rol, estado, aprobado)
+            VALUES ('Eduardo Master', 'edumaster', $1, 'MASTER', 1, 'ACTIVO', true)
+            ON CONFLICT (identificacion) DO UPDATE SET estado = 'ACTIVO', aprobado = true, rol = 'MASTER'
+        `, [passEdu]);
 
-        // 3. ASEGURAR COLUMNAS DE EDICIONES
-        try { await db.query('ALTER TABLE documento_ediciones ADD COLUMN estado_firma TEXT'); } catch(e){}
-        try { await db.query('ALTER TABLE documento_ediciones ADD COLUMN ruta_archivo_firmado TEXT'); } catch(e){}
+        await db.query(`
+            INSERT INTO usuarios (nombres_completos, identificacion, password_hash, rol, id_rol, estado, aprobado)
+            VALUES ('Admin Sistema', 'admin', $1, 'MASTER', 1, 'ACTIVO', true)
+            ON CONFLICT (identificacion) DO UPDATE SET estado = 'ACTIVO', aprobado = true, rol = 'MASTER'
+        `, [passAdmin]);
 
-        console.log('--- BLINDAJE COMPLETADO: EL SISTEMA AHORA ES RESILIENTE A REINICIOS ---');
         process.exit(0);
     } catch (err) {
-        console.error('❌ ERROR EN BLINDAJE:', err);
+        console.error('❌ FALLO:', err);
         process.exit(1);
     }
 }

@@ -65,10 +65,11 @@ router.post('/registro', async (req, res) => {
     }
 
     const sql = `INSERT INTO usuarios 
-      (nombres_completos, identificacion, direccion, telefono, tipo_formulario, codigo_unico, id_rol, id_empresa, password_hash) 
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`;
+      (nombres_completos, identificacion, direccion, telefono, tipo_formulario, codigo_unico, id_rol, id_empresa, password_hash, aprobado, estado) 
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id`;
     
-    const params = [nombres_completos, identificacion, direccion, telefono, tipo_formulario, codigo_unico_generado, id_rol_asignado, id_empresa_asignado, password_hash];
+    // Las empresas SIEMPRE requieren aprobación del Master (Seguridad de raíz)
+    const params = [nombres_completos, identificacion, direccion, telefono, tipo_formulario, codigo_unico_generado, id_rol_asignado, id_empresa_asignado, password_hash, false, 'PENDIENTE'];
     
     const { rows } = await db.query(sql, params);
     const nuevoUserId = rows[0].id;
@@ -80,9 +81,12 @@ router.post('/registro', async (req, res) => {
     }
 
     await db.query(`INSERT INTO bitacora (id_usuario, id_empresa_contexto, accion, detalle) VALUES ($1, $2, $3, $4)`,
-      [nuevoUserId, id_empresa_asignado, 'REGISTRO_USUARIO', 'Usuario registrado en el sistema exitosamente']);
+      [nuevoUserId, id_empresa_asignado, 'REGISTRO_USUARIO', 'Usuario registrado en el sistema. Esperando aprobación del MASTER.']);
 
-    res.status(201).json({ mensaje: 'Usuario registrado exitosamente. Esperando aprobación por Master.', codigo_unico: codigo_unico_generado });
+    res.status(201).json({ 
+      mensaje: 'Registro exitoso. Su cuenta ha sido creada y está en espera de aprobación por el Administrador MASTER.', 
+      codigo_unico: codigo_unico_generado 
+    });
 
   } catch (err) {
     console.error(err);
@@ -129,7 +133,7 @@ router.post('/adicional', authenticateToken, async (req, res) => {
 
         const sql = `INSERT INTO usuarios 
           (nombres_completos, identificacion, direccion, telefono, id_rol, id_empresa, password_hash, aprobado, estado, codigo_unico) 
-          VALUES ($1, $2, $3, $4, $5, $6, $7, TRUE, 'APROBADO', $8) RETURNING id`;
+          VALUES ($1, $2, $3, $4, $5, $6, $7, TRUE, 'ACTIVO', $8) RETURNING id`;
         
         const params = [nombres_completos, identificacion, direccion, telefono, id_rol_asignado, id_empresa_asignado, password_hash, codigo_heredado];
         const { rows } = await db.query(sql, params);
@@ -155,7 +159,7 @@ router.put('/:id/aprobar', authenticateToken, async (req, res) => {
             if (resMiRol.rows[0].nombre !== 'ADICIONAL') return res.status(403).json({ error: 'Permisos insuficientes' });
         }
     }
-    await db.query(`UPDATE usuarios SET aprobado = TRUE, estado = 'APROBADO' WHERE id = $1`, [req.params.id]);
+    await db.query(`UPDATE usuarios SET aprobado = TRUE, estado = 'ACTIVO' WHERE id = $1`, [req.params.id]);
     
     // LOG DE AUDITORÍA
     const idEmpresa = req.user.id_empresa || req.user.id;
