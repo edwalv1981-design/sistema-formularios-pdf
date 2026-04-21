@@ -211,7 +211,7 @@ function startHeartbeat() {
     setInterval(async () => {
         if (!localStorage.getItem('token')) return;
         try {
-            await fetch(`${API_URL}/auth/heartbeat`, {
+            await fetch(`/api/auth/heartbeat`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
             });
@@ -238,7 +238,7 @@ async function handleLogin(e) {
     if(unlockLink) unlockLink.style.display = 'none';
 
     try {
-        const res = await fetch(`${API_URL}/auth/login`, {
+        const res = await fetch(`/api/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ identificacion, password })
@@ -283,7 +283,7 @@ async function handleRegister(e) {
     };
 
     try {
-        const res = await fetch(`${API_URL}/usuarios/registro`, {
+        const res = await fetch(`/api/usuarios/registro`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -305,7 +305,7 @@ async function handleRegister(e) {
 async function handleLogout() {
     try {
         if (localStorage.getItem('token')) {
-            await fetch(`${API_URL}/auth/logout`, {
+            await fetch(`/api/auth/logout`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
             });
@@ -1110,7 +1110,7 @@ function renderContent(menuId, title) {
 async function fetchDigitalizacionesHistorial() {
     try {
         const q = document.getElementById('hist_search')?.value || '';
-        const res = await fetch(`${API_URL}/digitalizacion?q=${q}`, {
+        const res = await fetch(`/api/digitalizacion?q=${q}`, {
             headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
         });
         const data = await res.json();
@@ -1151,7 +1151,7 @@ async function fetchDigitalizacionesHistorial() {
 
 async function resumeBorrador(id) {
     try {
-        const res = await fetch(`${API_URL}/digitalizacion`, {
+        const res = await fetch(`/api/digitalizacion`, {
              headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
         });
         const all = await res.json();
@@ -1172,7 +1172,7 @@ async function resumeBorrador(id) {
 
 async function fetchUsersList() {
     try {
-        const res = await fetch(`${API_URL}/usuarios`, { headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') } });
+        const res = await fetch(`/api/usuarios`, { headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') } });
         const users = await res.json();
         
         let html = '';
@@ -1233,7 +1233,7 @@ async function fetchUsersList() {
 
 async function approveUser(id) {
     try {
-        await fetch(`${API_URL}/usuarios/${id}/aprobar`, {
+        await fetch(`/api/usuarios/${id}/aprobar`, {
             method: 'PUT',
             headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
         });
@@ -1246,7 +1246,7 @@ async function approveUser(id) {
 async function rejectUser(id) {
     if (!confirm('¿Estás seguro de rechazar este usuario? No podrá ingresar.')) return;
     try {
-        await fetch(`${API_URL}/usuarios/${id}/rechazar`, {
+        await fetch(`/api/usuarios/${id}/rechazar`, {
             method: 'PUT',
             headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
         });
@@ -1259,7 +1259,7 @@ async function rejectUser(id) {
 async function deleteUser(id) {
     if (!confirm('¿Estás seguro de eliminar COMPLETA e irreversiblemente este usuario?')) return;
     try {
-        await fetch(`${API_URL}/usuarios/${id}`, {
+        await fetch(`/api/usuarios/${id}`, {
             method: 'DELETE',
             headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
         });
@@ -1272,7 +1272,7 @@ async function deleteUser(id) {
 async function desbloquearUser(id) {
     if (!confirm('¿Está seguro de que desea desbloquear preventivamente esta cuenta para que vuelva a intentar credenciales?')) return;
     try {
-        const res = await fetch(`${API_URL}/usuarios/${id}/desbloquear`, {
+        const res = await fetch(`/api/usuarios/${id}/desbloquear`, {
             method: 'PUT',
             headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
         });
@@ -1312,7 +1312,7 @@ async function handlePlantillaUpload(e) {
     formData.append('html_content', '');
 
     try {
-        const res = await fetch(`${API_URL}/formularios/upload`, {
+        const res = await fetch(`/api/formularios/upload`, {
             method: 'POST',
             headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') },
             body: formData
@@ -1330,7 +1330,7 @@ async function handlePlantillaUpload(e) {
 
 async function fetchPlantillas() {
     try {
-        const res = await fetch(`${API_URL}/formularios`);
+        const res = await fetch(`/api/formularios`);
         const plantillas = await res.json();
         window.GLOBAL_PLANTILLAS = plantillas; // Cache global para Digitalización
         
@@ -1357,7 +1357,7 @@ async function fetchPlantillas() {
 async function descargarPlantillaOriginal(id, nombre) {
     showCustomModal('Descargando...', 'El Agente está localizando y asegurando el binario original...', 'info');
     try {
-        const response = await fetch(`${API_URL}/formularios/view/${id}`, {
+        const response = await fetch(`/api/formularios/view/${id}`, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
 
@@ -1417,8 +1417,8 @@ ${plantilla.html_content}
 async function deletePlantilla(id) {
     if (!confirm('¿Estás seguro de eliminar esta Plantilla? Se borrará de la lista para todos.')) return;
     try {
-        console.log(`[DELETE] Petición a: ${API_URL}/formularios/${id}`);
-        const res = await fetch(`${API_URL}/formularios/${id}`, {
+        console.log(`[DELETE] Petición a: /api/formularios/${id}`);
+        const res = await fetch(`/api/formularios/${id}`, {
             method: 'DELETE',
             headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
         });
@@ -1440,7 +1440,7 @@ async function deletePlantilla(id) {
 
 async function loadFormTypesForRegistration() {
     try {
-        const res = await fetch(`${API_URL}/formularios`);
+        const res = await fetch(`/api/formularios`);
         const plantillas = await res.json();
         const select = document.getElementById('reg_tipo_formulario');
         if(!select) return;
@@ -1502,7 +1502,7 @@ function addDynamicField() {
 window.GLOBAL_PLANTILLAS = [];
 async function loadPlantillasForDigit() {
     try {
-        const res = await fetch(`${API_URL}/formularios`, {
+        const res = await fetch(`/api/formularios`, {
             headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
         });
         const plantillas = await res.json();
@@ -2425,7 +2425,7 @@ async function loadDigitTargets() {
     if (delegationContainer) delegationContainer.style.display = 'block';
 
     try {
-        const res = await fetch(`${API_URL}/usuarios`, {
+        const res = await fetch(`/api/usuarios`, {
             headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
         });
         const users = await res.json();
@@ -2538,7 +2538,7 @@ async function handleDigitalizacionSubmit(e, estado) {
     }
 
     try {
-        const url = draft_id ? `${API_URL}/digitalizacion/${draft_id}` : `${API_URL}/digitalizacion`;
+        const url = draft_id ? `/api/digitalizacion/${draft_id}` : `/api/digitalizacion`;
         const method = draft_id ? 'PUT' : 'POST';
 
         const res = await fetch(url, {
@@ -2578,7 +2578,7 @@ async function fetchDigitalizacionesHistorial() {
         if(hasta) params.append('fecha_hasta', hasta);
         if(estado) params.append('estado', estado);
 
-        const res = await fetch(`${API_URL}/digitalizacion?${params.toString()}`, { 
+        const res = await fetch(`/api/digitalizacion?${params.toString()}`, { 
             headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') } 
         });
         const docs = await res.json();
@@ -2661,13 +2661,13 @@ window.editDigitalizacion = function(id) {
 
 window.exportDoc = async function(id, type) {
     if (type === 'pdf') {
-        window.open(`${API_URL}/digitalizacion/export/${id}/pdf`, '_blank');
+        window.open(`/api/digitalizacion/export/${id}/pdf`, '_blank');
     } else if (type === 'email') {
         const destEmail = prompt('Ingrese el correo electrónico al que desea enviar el registro digitalizado:');
         if (!destEmail || !destEmail.trim()) return;
 
         try {
-            const res = await fetch(`${API_URL}/digitalizacion/export/${id}/email`, {
+            const res = await fetch(`/api/digitalizacion/export/${id}/email`, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
@@ -2754,7 +2754,7 @@ function exportarAPdf() {
 async function duplicateDoc(id) {
     if (!confirm('¿Desea duplicar este registro?')) return;
     try {
-        const res = await fetch(`${API_URL}/digitalizacion/duplicar/${id}`, {
+        const res = await fetch(`/api/digitalizacion/duplicar/${id}`, {
             method: 'POST',
             headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
         });
@@ -2768,7 +2768,7 @@ async function duplicateDoc(id) {
 async function deleteDoc(id) {
     if (!confirm('¿Está seguro de eliminar este registro?')) return;
     try {
-        const res = await fetch(`${API_URL}/digitalizacion/${id}`, {
+        const res = await fetch(`/api/digitalizacion/${id}`, {
             method: 'DELETE',
             headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
         });
@@ -2844,7 +2844,7 @@ async function handleAdicionalUserUpload(e) {
     };
 
     try {
-        const res = await fetch(`${API_URL}/usuarios/adicional`, {
+        const res = await fetch(`/api/usuarios/adicional`, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
@@ -2865,7 +2865,7 @@ async function handleAdicionalUserUpload(e) {
 async function fetchMyAdicionales() {
     try {
         // En este punto el GET /api/usuarios me da todo lo que me pertenece
-        const res = await fetch(`${API_URL}/usuarios`, { 
+        const res = await fetch(`/api/usuarios`, { 
             headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') } 
         });
         const docs = await res.json();
@@ -2892,7 +2892,7 @@ async function fetchMyAdicionales() {
 
 async function fetchMyAdicionalesForPerms() {
     try {
-        const res = await fetch(`${API_URL}/usuarios`, { 
+        const res = await fetch(`/api/usuarios`, { 
             headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') } 
         });
         const docs = await res.json();
@@ -2927,7 +2927,7 @@ async function fetchMyAdicionalesForPerms() {
 async function togglePermiso(idUsuario, accion) {
     if(!confirm(`¿Seguro que desea ${accion === 'aprobar' ? 'CONCEDER' : 'REVOCAR'} el acceso a este operador?`)) return;
     try {
-        const res = await fetch(`${API_URL}/usuarios/${idUsuario}/${accion}`, {
+        const res = await fetch(`/api/usuarios/${idUsuario}/${accion}`, {
             method: 'PUT',
             headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
         });
@@ -2946,7 +2946,7 @@ async function resetPassword(idUsuario) {
     if (newPassword.length < 6) return alert('La contraseña debe tener mínimo 6 caracteres.');
 
     try {
-        const res = await fetch(`${API_URL}/usuarios/${idUsuario}/password`, {
+        const res = await fetch(`/api/usuarios/${idUsuario}/password`, {
             method: 'PUT',
             headers: { 
                 'Content-Type': 'application/json',
@@ -2970,11 +2970,11 @@ async function openFormPermissionsModal(idUsuario) {
 
     try {
         // Cargar todos los formularios
-        const resForms = await fetch(`${API_URL}/formularios`);
+        const resForms = await fetch(`/api/formularios`);
         const allForms = await resForms.json();
 
         // Cargar los permitidos actuales
-        const resPerms = await fetch(`${API_URL}/usuarios/${idUsuario}/permisos-formularios`, {
+        const resPerms = await fetch(`/api/usuarios/${idUsuario}/permisos-formularios`, {
             headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
         });
         const permittedTypes = await resPerms.json();
@@ -3006,7 +3006,7 @@ async function saveFormPermissionsModal(e) {
     const selectedForms = Array.from(checks).map(c => c.value);
 
     try {
-        const res = await fetch(`${API_URL}/usuarios/${idUsuario}/permisos-formularios`, {
+        const res = await fetch(`/api/usuarios/${idUsuario}/permisos-formularios`, {
             method: 'PUT',
             headers: { 
                 'Content-Type': 'application/json',
@@ -3041,7 +3041,7 @@ function changeBitaPage(newPage) {
 async function fetchBitacora() {
     try {
         const queryParams = new URLSearchParams({ page: currentBitaPage, search: currentBitaSearch });
-        const res = await fetch(`${API_URL}/bitacora?${queryParams.toString()}`, { 
+        const res = await fetch(`/api/bitacora?${queryParams.toString()}`, { 
             headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') } 
         });
         const responseData = await res.json();
@@ -3106,7 +3106,7 @@ async function guardarCambiosModal(id) {
     const estado = incomplete === 0 ? 'FINALIZADO' : 'PENDIENTE';
     
     try {
-        const res = await fetch(`${API_URL}/digitalizacion/${id}`, {
+        const res = await fetch(`/api/digitalizacion/${id}`, {
             method: 'PUT',
             headers: { 
                 'Authorization': 'Bearer ' + localStorage.getItem('token'),
@@ -3147,7 +3147,7 @@ function abrirModalEmail(id) {
 
 async function enviarCorreoBackend(id, email) {
     try {
-        const res = await fetch(`${API_URL}/documentos/${id}/enviar-correo`, {
+        const res = await fetch(`/api/documentos/${id}/enviar-correo`, {
             method: 'POST',
             headers: { 
                 'Authorization': 'Bearer ' + localStorage.getItem('token'),
@@ -3179,7 +3179,7 @@ async function handleMasterProfileUpdate(e) {
     const user = JSON.parse(localStorage.getItem('user'));
     
     try {
-        const res = await fetch(`${API_URL}/usuarios/${user.id}/perfil`, {
+        const res = await fetch(`/api/usuarios/${user.id}/perfil`, {
             method: 'PUT',
             headers: { 
                 'Authorization': 'Bearer ' + localStorage.getItem('token'),
@@ -3224,7 +3224,7 @@ async function handleMasterPasswordChange(e) {
     const user = getSafeUser();
     
     try {
-        const res = await fetch(`${API_URL}/usuarios/${user.id}/password`, {
+        const res = await fetch(`/api/usuarios/${user.id}/password`, {
             method: 'PUT',
             headers: { 
                 'Authorization': 'Bearer ' + localStorage.getItem('token'),
@@ -3253,7 +3253,7 @@ async function handleRequestUnlockPIN() {
     if(!ident) return alert('Ingrese su identificación');
 
     try {
-        const res = await fetch(`${API_URL}/usuarios/request-unlock`, {
+        const res = await fetch(`/api/usuarios/request-unlock`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ identificacion: ident })
@@ -3279,7 +3279,7 @@ async function handleVerifyAndUnlockMaster() {
     if(!code || !pwd) return showCustomModal('Campos Incompletos', 'Por favor complete todos los datos.', 'info');
 
     try {
-        const res = await fetch(`${API_URL}/usuarios/verify-unlock`, {
+        const res = await fetch(`/api/usuarios/verify-unlock`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ identificacion: ident, code: code, newPassword: pwd })
@@ -3359,7 +3359,7 @@ async function loadPlantillasForSmartParsing() {
     if(!selector) return;
     
     try {
-        const res = await fetch(`${API_URL}/formularios`, {
+        const res = await fetch(`/api/formularios`, {
             headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
         });
         const data = await res.json();
@@ -3857,7 +3857,7 @@ async function startFullProEditor(plantilla) {
     }
 
     try {
-        const url = `${API_URL}/formularios/view/${plantilla.id}?token=${localStorage.getItem('token')}`;
+        const url = `/api/formularios/view/${plantilla.id}?token=${localStorage.getItem('token')}`;
         
         // --- CARGA UNIFICADA (Optimización de Canal) ---
         const response = await fetch(url);
@@ -4777,6 +4777,7 @@ function flushActiveInputs() {
 // ==========================================================================
 
 function renderSignedFormsView(container) {
+    console.log("[DEBUG] Iniciando renderSignedFormsView...");
     container.innerHTML = `
         <div class="glass-card" style="padding:40px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
@@ -4808,7 +4809,7 @@ function renderSignedFormsView(container) {
 
 async function fetchSignedForms() {
     try {
-        const response = await fetch(`${API_URL}/formularios-firmados`, {
+        const response = await fetch(`/api/formularios-firmados`, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
         const data = await response.json();
@@ -4932,6 +4933,7 @@ async function downloadSignedForm(id, nombre) {
 // ==========================================================================
 
 function renderPersonalDocsView(container) {
+    console.log("[DEBUG] Iniciando renderPersonalDocsView...");
     container.innerHTML = `
         <div class="glass-card" style="padding:40px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
@@ -4943,7 +4945,7 @@ function renderPersonalDocsView(container) {
             </div>
             
             <div class="table-container">
-                <table style="width:100\%; border-collapse:collapse;">
+                <table style="width:100%; border-collapse:collapse;">
                     <thead>
                         <tr style="text-align:left; border-bottom:2px solid var(--border-color);">
                             <th style="padding:12px;">Categoría</th>
@@ -4964,7 +4966,7 @@ function renderPersonalDocsView(container) {
 
 async function fetchPersonalDocs() {
     try {
-        const response = await fetch(`${API_URL}/documentacion-personal`, {
+        const response = await fetch(`/api/documentacion-personal`, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
         const data = await response.json();
@@ -5169,7 +5171,7 @@ async function reemplazarDocumento(id, type) {
 async function downloadPersonalDoc(id, nombre) {
     showCustomModal('Descargando...', 'Accediendo al repositorio seguro de documentación...', 'info');
     try {
-        const response = await fetch(`${API_URL}/documentacion-personal/view/${id}`, {
+        const response = await fetch(`/api/documentacion-personal/view/${id}`, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
         if (!response.ok) throw new Error('Error al acceder al documento personal.');
