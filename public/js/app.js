@@ -1172,7 +1172,7 @@ async function fetchUsersList() {
             if(u.estado === 'PENDIENTE') pending++;
             
             let statusText = '';
-            if(u.estado === 'APROBADO') statusText = '<span style="color:var(--secondary)">Activo</span>';
+            if(u.estado === 'ACTIVO') statusText = '<span style="color:var(--secondary)">Activo</span>';
             else if(u.estado === 'RECHAZADO') statusText = '<span style="color:#ef4444">Rechazado</span>';
             else statusText = '<span style="color:#f59e0b">Pendiente</span>';
 
@@ -1184,7 +1184,7 @@ async function fetchUsersList() {
             if (u.rol !== 'MASTER') {
                 
                 const showApprove = (u.estado === 'PENDIENTE' || u.estado === 'RECHAZADO');
-                const showReject = (u.estado === 'PENDIENTE' || u.estado === 'APROBADO');
+                const showReject = (u.estado === 'PENDIENTE' || u.estado === 'ACTIVO');
 
                 if (showApprove) {
                     authBtns += `<button onclick="approveUser(${u.id})" class="btn-ghost" style="padding:4px 8px; border:1px solid var(--secondary); color:var(--secondary); margin-right:4px;" title="Aprobar / Reactivar">✔️</button>`;

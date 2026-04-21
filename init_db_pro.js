@@ -26,13 +26,14 @@ async function initialize() {
         
         try { await db.query('ALTER TABLE formularios ADD COLUMN archivo_base64 TEXT'); } catch(e){}
 
-        // 3. ASEGURAR QUE LOS ADMINS EXISTENTES ESTÉN ACTIVOS
-        await db.query(`
+        // 3. ACTIVACIÓN FORZADA E INMEDIATA DE ADMINISTRADORES
+        const updateRes = await db.query(`
             UPDATE usuarios 
             SET estado = 'ACTIVO', aprobado = true 
-            WHERE rol IN ('MASTER', 'EMPRESA')
+            WHERE (rol = 'MASTER' OR rol = 'EMPRESA' OR id_rol <= 2)
+            AND is_deleted = false
         `);
-        console.log('✓ Administradores y Empresas activados masivamente.');
+        console.log(`✓ ÉXITO: ${updateRes.rowCount} administradores han sido activados correctamente.`);
 
         // 4. GARANTIZAR USUARIOS MAESTROS (edumaster y admin)
         const salt = 10;
