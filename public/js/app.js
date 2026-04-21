@@ -921,7 +921,7 @@ function renderContent(menuId, title) {
         fetchMyAdicionalesForPerms();
 
     } else if (menuId === 'val-perfil-data') {
-        const user = JSON.parse(localStorage.getItem('user'));
+        const user = getSafeUser();
         content.innerHTML = `
             <div class="glass-card" style="padding:40px; max-width:720px; margin:0 auto;">
                 <h3 style="margin-bottom:10px; color:var(--primary);"><i class="ph-duotone ph-identification-card"></i> Información de Identidad</h3>
@@ -1178,7 +1178,7 @@ async function fetchUsersList() {
         let html = '';
         let pending = 0;
         
-        const myUser = JSON.parse(localStorage.getItem('user'));
+        const myUser = getSafeUser();
 
         users.forEach(u => {
             if(u.estado === 'PENDIENTE') pending++;
@@ -2418,7 +2418,7 @@ document.addEventListener('click', (e) => {
 });
 
 async function loadDigitTargets() {
-    const myUser = JSON.parse(localStorage.getItem('user'));
+    const myUser = getSafeUser();
     if(myUser.rol === 'ADICIONAL') return;
 
     const delegationContainer = document.getElementById('delegation-container');
@@ -3221,7 +3221,7 @@ async function handleMasterPasswordChange(e) {
         return;
     }
 
-    const user = JSON.parse(localStorage.getItem('user'));
+    const user = getSafeUser();
     
     try {
         const res = await fetch(`${API_URL}/usuarios/${user.id}/password`, {
@@ -4792,7 +4792,7 @@ function renderSignedFormsView(container) {
                     <thead>
                         <tr style="text-align:left; border-bottom:2px solid var(--border-color);">
                             <th style="padding:12px;">Nombre de Archivo</th>
-                            ${JSON.parse(localStorage.getItem('user')).rol === 'MASTER' ? '<th style="padding:12px;">Subido Por</th>' : ''}
+                            ${(getSafeUser() || {}).rol === 'MASTER' ? '<th style="padding:12px;">Subido Por</th>' : ''}
                             <th style="padding:12px;">Estado (Agente)</th>
                             <th style="padding:12px;">Fecha Carga</th>
                             <th style="padding:12px; text-align:right;">Acciones</th>
@@ -4947,7 +4947,7 @@ function renderPersonalDocsView(container) {
                     <thead>
                         <tr style="text-align:left; border-bottom:2px solid var(--border-color);">
                             <th style="padding:12px;">Categoría</th>
-                            ${JSON.parse(localStorage.getItem('user')).rol === 'MASTER' ? '<th style="padding:12px;">Usuario</th>' : ''}
+                            ${(getSafeUser() || {}).rol === 'MASTER' ? '<th style="padding:12px;">Usuario</th>' : ''}
                             <th style="padding:12px;">Archivo</th>
                             <th style="padding:12px;">Fecha Carga</th>
                             <th style="padding:12px;">Expiración</th>
