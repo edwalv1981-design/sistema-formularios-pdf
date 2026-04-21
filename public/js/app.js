@@ -4795,7 +4795,7 @@ function renderSignedFormsView(container) {
 
 async function fetchSignedForms() {
     try {
-        const response = await fetch('/api/formularios-firmados', {
+        const response = await fetch(`${API_URL}/formularios-firmados`, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
         const data = await response.json();
@@ -4857,7 +4857,7 @@ async function uploadSignedFile() {
     showCustomModal('Procesando...', 'El Agente Experto está validando la firma digital criptográfica...', 'info');
 
     try {
-        const response = await fetch('/api/formularios-firmados/upload', {
+        const response = await fetch(`${API_URL}/formularios-firmados/upload`, {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
             body: formData
@@ -4890,7 +4890,7 @@ async function deleteSignedForm(id) {
 async function downloadSignedForm(id) {
     showCustomModal('Descargando...', 'Recuperando formulario firmado y validando integridad binaria...', 'info');
     try {
-        const response = await fetch(`/api/formularios-firmados/view/${id}`, {
+        const response = await fetch(`${API_URL}/formularios-firmados/view/${id}`, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
         if (!response.ok) throw new Error('No se pudo localizar el documento en el servidor.');
@@ -4946,7 +4946,7 @@ function renderPersonalDocsView(container) {
 
 async function fetchPersonalDocs() {
     try {
-        const response = await fetch('/api/documentacion-personal', {
+        const response = await fetch(`${API_URL}/documentacion-personal`, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
         const data = await response.json();
@@ -5147,7 +5147,7 @@ async function reemplazarDocumento(id, type) {
 async function downloadPersonalDoc(id) {
     showCustomModal('Descargando...', 'Accediendo al repositorio seguro de documentación...', 'info');
     try {
-        const response = await fetch(`/api/documentacion-personal/view/${id}`, {
+        const response = await fetch(`${API_URL}/documentacion-personal/view/${id}`, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
         if (!response.ok) throw new Error('Error al acceder al documento personal.');

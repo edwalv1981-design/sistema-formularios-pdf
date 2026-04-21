@@ -109,7 +109,8 @@ router.get('/view/:id', authenticateToken, async (req, res) => {
         if (result.rows.length === 0) return res.status(404).json({ error: 'Documento no encontrado' });
         
         const info = result.rows[0];
-        const fullPath = path.join(process.cwd(), info.rows ? info.rows[0].ruta_archivo.replace(/^\/+/, '') : info.ruta_archivo.replace(/^\/+/, ''));
+        const rutaLimpia = info.ruta_archivo.replace(/^\/+/, '');
+        const fullPath = path.join(process.cwd(), rutaLimpia);
         
         if (!fs.existsSync(fullPath)) {
             console.log(`[RECOVERY_SIGNED] Reconstruyendo binario firmado desde DB...`);
