@@ -2,29 +2,35 @@ const db = require('./db');
 const bcrypt = require('bcryptjs');
 
 async function initialize() {
-    console.log('--- REPARACIÓN INTEGRAL DE BASE DE DATOS (FASE BITÁCORA) ---');
+    console.log('--- SINCRONIZACIÓN MAESTRA DE ESQUEMAS (TOTAL SYSTEM SYNC) ---');
     try {
-        // 1. REPARAR TABLA BITÁCORA (Falta columna de contexto)
+        // 1. TABLA: DOCUMENTOS PERSONALES
         await db.query(`
-            CREATE TABLE IF NOT EXISTS bitacora (
+            CREATE TABLE IF NOT EXISTS documentos_personales (
                 id SERIAL PRIMARY KEY,
-                id_usuario INTEGER,
-                id_empresa_contexto INTEGER,
-                accion TEXT,
-                detalle TEXT,
-                fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                user_id INTEGER,
+                tipo TEXT,
+                nombre_archivo TEXT,
+                ruta_archivo TEXT,
+                fecha_carga TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                estado_vigencia TEXT DEFAULT 'NO DETECTADO',
+                fecha_expiracion DATE
             )
         `);
 
-        // Sincronización manual de columnas para Bitácora
-        try {
-            await db.query('ALTER TABLE bitacora ADD COLUMN id_empresa_contexto INTEGER');
-        } catch (e) {
-            // Ya existe, ignorar
-        }
-        console.log('✓ Tabla bitacora sincronizada.');
+        // 2. TABLA: FORMULARIOS FIRMADOS
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS formularios_firmados (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER,
+                nombre_archivo TEXT,
+                ruta_archivo TEXT,
+                is_valid BOOLEAN DEFAULT FALSE,
+                fecha_carga TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
 
-        // 2. ASEGURAR TABLA DOCUMENTO_EDICIONES (Nombres oficiales)
+        // 3. TABLA: DOCUMENTO_EDICIONES (Estructura oficial para Editor Maestro)
         await db.query(`
             CREATE TABLE IF NOT EXISTS documento_ediciones (
                 id SERIAL PRIMARY KEY,
@@ -37,34 +43,50 @@ async function initialize() {
                 fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
-        console.log('✓ Tabla documento_ediciones verificada.');
 
-        // 3. RE-ACTIVACIÓN DE USUARIOS MASTER
+        // 4. TABLA: BITÁCORA (Historial inmutable)
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS bitacora (
+                id SERIAL PRIMARY KEY,
+                id_usuario INTEGER,
+                id_empresa_contexto INTEGER,
+                accion TEXT,
+                detalle TEXT,
+                fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        // 5. REPARACIÓN DE COLUMNAS (Mantenimiento Proactivo)
+        const fixColumns = [
+            ['bitacora', 'id_empresa_contexto', 'INTEGER'],
+            ['documento_ediciones', 'estado_firma', 'TEXT'],
+            ['documento_ediciones', 'ruta_archivo_firmado', 'TEXT']
+        ];
+
+        for (const [table, col, type] of fixColumns) {
+            try {
+                await db.query(`ALTER TABLE ${table} ADD COLUMN ${col} ${type}`);
+                console.log(`✓ Columna añadida: ${table}.${col}`);
+            } catch (e) {
+                // Ya existe, todo bien
+            }
+        }
+
+        // 6. GARANTIZAR ACCESO MASTER
         const salt = 10;
-        const hashAdmin = await bcrypt.hash('Admin123!', salt);
-        const hashEdu = await bcrypt.hash('Master2026*', salt);
-
+        const pass = await bcrypt.hash('Master2026*', salt);
         await db.query(`
-            INSERT INTO usuarios 
-            (nombres_completos, identificacion, password_hash, id_rol, rol, estado, aprobado)
-            VALUES ($1, $2, $3, 1, 'MASTER', 'ACTIVO', true)
-            ON CONFLICT (identificacion) 
-            DO UPDATE SET estado = 'ACTIVO', aprobado = TRUE, rol = 'MASTER', id_rol = 1
-        `, ['Administrador Sistema', 'admin', hashAdmin]);
+            UPDATE usuarios SET 
+                estado = 'ACTIVO', 
+                aprobado = TRUE,
+                password_hash = $1
+            WHERE identificacion = 'edumaster'
+        `, [pass]);
 
-        await db.query(`
-            INSERT INTO usuarios 
-            (nombres_completos, identificacion, password_hash, id_rol, rol, estado, aprobado)
-            VALUES ($1, $2, $3, 1, 'MASTER', 'ACTIVO', true)
-            ON CONFLICT (identificacion) 
-            DO UPDATE SET estado = 'ACTIVO', aprobado = TRUE, rol = 'MASTER', id_rol = 1
-        `, ['Eduardo Master', 'edumaster', hashEdu]);
-
-        console.log('✓ Usuarios Master garantizados.');
-        console.log('--- REPARACIÓN COMPLETADA CON ÉXITO ---');
+        console.log('--- SINCRONIZACIÓN COMPLETADA: SISTEMA OPERATIVO AL 100% ---');
         process.exit(0);
     } catch (err) {
-        console.error('❌ FALLO CRÍTICO:', err);
+        console.error('❌ FALLO EN SINCRONIZACIÓN:', err);
         process.exit(1);
     }
 }

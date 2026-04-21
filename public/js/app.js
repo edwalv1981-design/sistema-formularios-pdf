@@ -4757,10 +4757,15 @@ async function fetchSignedForms() {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
         const data = await response.json();
+        if(!response.ok) {
+            throw new Error(data.detalle || data.error || 'Error desconocido en servidor');
+        }
+        
         const tbody = document.getElementById('signed-forms-table-body');
+        if(!tbody) return;
         tbody.innerHTML = '';
 
-        if(data.length === 0) {
+        if(!Array.isArray(data) || data.length === 0) {
             tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:40px; color:var(--text-muted);">No existe información.</td></tr>';
             return;
         }
@@ -4880,10 +4885,15 @@ async function fetchPersonalDocs() {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
         const data = await response.json();
+        if(!response.ok) {
+            throw new Error(data.detalle || data.error || 'Error desconocido en servidor');
+        }
+
         const tbody = document.getElementById('personal-docs-table-body');
+        if(!tbody) return;
         tbody.innerHTML = '';
 
-        if(data.length === 0) {
+        if(!Array.isArray(data) || data.length === 0) {
             tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:40px; color:var(--text-muted);">No existe información.</td></tr>';
             return;
         }
