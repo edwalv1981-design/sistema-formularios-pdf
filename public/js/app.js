@@ -3819,8 +3819,9 @@ async function startFullProEditor(plantilla) {
         // --- CARGA UNIFICADA (Optimización de Canal) ---
         const response = await fetch(url);
         if(!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.detalle || `HTTP Error ${response.status}`);
+            const errorData = await response.json().catch(() => ({}));
+            const msg = errorData.detalle || errorData.error || errorData.mensaje || `Error HTTP ${response.status}`;
+            throw new Error(msg);
         }
         const pdfBlob = await response.blob();
         const pdfData = await pdfBlob.arrayBuffer();

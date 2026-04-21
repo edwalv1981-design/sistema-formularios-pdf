@@ -117,8 +117,8 @@ router.get('/view/:id', authenticateToken, async (req, res) => {
         
         const rutaOriginal = result.rows[0].ruta_archivo;
         const rutaLimpia = rutaOriginal.replace(/^\/+/, '');
-        // Usar __dirname para mayor precisión en la ubicación del archivo
-        const fullPath = path.resolve(__dirname, '..', rutaLimpia);
+        // Usar process.cwd() para entornos productivos (Railway)
+        const fullPath = path.join(process.cwd(), rutaLimpia);
         
         if (!fs.existsSync(fullPath)) {
             console.log(`[RECOVERY_ENGINE] El archivo físico no existe. Intentando reconstrucción desde Base64...`);
