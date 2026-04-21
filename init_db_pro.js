@@ -2,9 +2,29 @@ const db = require('./db');
 const bcrypt = require('bcryptjs');
 
 async function initialize() {
-    console.log('--- REPARACIÓN DE TABLA DE EDICIONES (DOCUMENTO_EDICIONES) ---');
+    console.log('--- REPARACIÓN INTEGRAL DE BASE DE DATOS (FASE BITÁCORA) ---');
     try {
-        // 1. RE-ESTRUCTURACIÓN DE DOCUMENTO_EDICIONES (NOMBRE OFICIAL)
+        // 1. REPARAR TABLA BITÁCORA (Falta columna de contexto)
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS bitacora (
+                id SERIAL PRIMARY KEY,
+                id_usuario INTEGER,
+                id_empresa_contexto INTEGER,
+                accion TEXT,
+                detalle TEXT,
+                fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        // Sincronización manual de columnas para Bitácora
+        try {
+            await db.query('ALTER TABLE bitacora ADD COLUMN id_empresa_contexto INTEGER');
+        } catch (e) {
+            // Ya existe, ignorar
+        }
+        console.log('✓ Tabla bitacora sincronizada.');
+
+        // 2. ASEGURAR TABLA DOCUMENTO_EDICIONES (Nombres oficiales)
         await db.query(`
             CREATE TABLE IF NOT EXISTS documento_ediciones (
                 id SERIAL PRIMARY KEY,
@@ -17,49 +37,34 @@ async function initialize() {
                 fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
+        console.log('✓ Tabla documento_ediciones verificada.');
 
-        // Sincronización de columnas manual (Seguridad extra)
-        const expectedColumns = [
-            ['user_id', 'INTEGER'],
-            ['plantilla_id', 'INTEGER'],
-            ['nombre_archivo_original', 'TEXT'],
-            ['datos_json', 'JSONB'],
-            ['estado_firma', 'TEXT'],
-            ['ruta_archivo_firmado', 'TEXT'],
-            ['fecha_creacion', 'TIMESTAMP']
-        ];
-
-        for (const [col, type] of expectedColumns) {
-            try {
-                await db.query(`ALTER TABLE documento_ediciones ADD COLUMN ${col} ${type}`);
-            } catch (e) {}
-        }
-        console.log('✓ Tabla documento_ediciones sincronizada.');
-
-        // 2. Garantizar que todos los usuarios Master estén activos
+        // 3. RE-ACTIVACIÓN DE USUARIOS MASTER
         const salt = 10;
-        const masters = [
-            ['admin', 'Admin123!', 'Administrador Sistema'],
-            ['edumaster', 'Master2026*', 'Eduardo Master']
-        ];
-        for (const [ident, pass, name] of masters) {
-            const hash = await bcrypt.hash(pass, salt);
-            await db.query(`
-                INSERT INTO usuarios 
-                (nombres_completos, identificacion, password_hash, id_rol, rol, estado, aprobado)
-                VALUES ($1, $2, $3, 1, 'MASTER', 'ACTIVO', true)
-                ON CONFLICT (identificacion) 
-                DO UPDATE SET 
-                    password_hash = EXCLUDED.password_hash,
-                    rol = 'MASTER', id_rol = 1, estado = 'ACTIVO', aprobado = TRUE
-            `, [name, ident, hash]);
-        }
-        
-        console.log('✓ Usuarios Master verificados.');
-        console.log('--- RESCATE DE EDICIONES COMPLETADO ---');
+        const hashAdmin = await bcrypt.hash('Admin123!', salt);
+        const hashEdu = await bcrypt.hash('Master2026*', salt);
+
+        await db.query(`
+            INSERT INTO usuarios 
+            (nombres_completos, identificacion, password_hash, id_rol, rol, estado, aprobado)
+            VALUES ($1, $2, $3, 1, 'MASTER', 'ACTIVO', true)
+            ON CONFLICT (identificacion) 
+            DO UPDATE SET estado = 'ACTIVO', aprobado = TRUE, rol = 'MASTER', id_rol = 1
+        `, ['Administrador Sistema', 'admin', hashAdmin]);
+
+        await db.query(`
+            INSERT INTO usuarios 
+            (nombres_completos, identificacion, password_hash, id_rol, rol, estado, aprobado)
+            VALUES ($1, $2, $3, 1, 'MASTER', 'ACTIVO', true)
+            ON CONFLICT (identificacion) 
+            DO UPDATE SET estado = 'ACTIVO', aprobado = TRUE, rol = 'MASTER', id_rol = 1
+        `, ['Eduardo Master', 'edumaster', hashEdu]);
+
+        console.log('✓ Usuarios Master garantizados.');
+        console.log('--- REPARACIÓN COMPLETADA CON ÉXITO ---');
         process.exit(0);
     } catch (err) {
-        console.error('❌ FALLO TÉCNICO:', err);
+        console.error('❌ FALLO CRÍTICO:', err);
         process.exit(1);
     }
 }
