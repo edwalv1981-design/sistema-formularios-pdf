@@ -4887,6 +4887,29 @@ async function deleteSignedForm(id) {
     }
 }
 
+async function downloadSignedForm(id) {
+    showCustomModal('Descargando...', 'Recuperando formulario firmado y validando integridad binaria...', 'info');
+    try {
+        const response = await fetch(`/api/formularios-firmados/view/${id}`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        if (!response.ok) throw new Error('No se pudo localizar el documento en el servidor.');
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Signed_Doc_${id}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        closeCustomModal();
+    } catch (err) {
+        showCustomModal('Error', err.message, 'error');
+    }
+}
+
 // ==========================================================================
 // MÓDULO: DOCUMENTOS PERSONALES
 // ==========================================================================
@@ -5122,7 +5145,26 @@ async function reemplazarDocumento(id, type) {
 }
 
 async function downloadPersonalDoc(id) {
-    window.open(`/api/documentacion-personal/view/${id}?token=${localStorage.getItem('token')}`, '_blank');
+    showCustomModal('Descargando...', 'Accediendo al repositorio seguro de documentación...', 'info');
+    try {
+        const response = await fetch(`/api/documentacion-personal/view/${id}`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        if (!response.ok) throw new Error('Error al acceder al documento personal.');
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Doc_Personal_${id}`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        closeCustomModal();
+    } catch (err) {
+        showCustomModal('Error', err.message, 'error');
+    }
 }
 
 // ==========================================================================

@@ -43,9 +43,10 @@ router.post('/upload', authenticateToken, upload.single('archivo'), async (req, 
         const idEmpresa = req.user.id_empresa || userId;
         const rutaUrl = '/uploads/personal/' + req.file.filename;
 
+        const archivoBase64 = fs.readFileSync(req.file.path).toString('base64');
         const result = await db.query(
-            'INSERT INTO documentos_personales (user_id, tipo, nombre_archivo, ruta_archivo, fecha_carga, estado_vigencia) VALUES ($1, $2, $3, $4, NOW(), \'NO DETECTADO\') RETURNING id',
-            [userId, tipo, req.file.originalname, rutaUrl]
+            'INSERT INTO documentos_personales (user_id, tipo, nombre_archivo, ruta_archivo, fecha_carga, estado_vigencia, archivo_base64) VALUES ($1, $2, $3, $4, NOW(), \'NO DETECTADO\', $5) RETURNING id',
+            [userId, tipo, req.file.originalname, rutaUrl, archivoBase64]
         );
         const docId = result.rows[0].id;
 
@@ -144,10 +145,30 @@ router.get('/view/:id', authenticateToken, async (req, res) => {
         
         if (result.rows.length === 0) return res.status(404).json({ error: 'Documento no encontrado' });
         
-        const fullPath = path.join(process.cwd(), result.rows[0].ruta_archivo.replace(/^\/+/, ''));
-        if (!fs.existsSync(fullPath)) return res.status(404).json({ error: 'Archivo físico no encontrado' });
+        const info = result.rows[0];
+        const fullPath = path.join(process.cwd(), info.ruta_archivo.replace(/^\/+/, ''));
         
-        res.sendFile(fullPath);
+        if (!fs.existsSync(fullPath)) {
+            console.log(`[RECOVERY_DOCS] Reconstruyendo documento personal desde Base64...`);
+            const recovery = await db.query('SELECT archivo_base64 FROM documentos_personales WHERE id = $1', [id]);
+            if (recovery.rows.length > 0 && recovery.rows[0].archivo_base64) {
+                const dir = path.dirname(fullPath);
+                if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+                fs.writeFileSync(fullPath, Buffer.from(recovery.rows[0].archivo_base64, 'base64'));
+            } else {
+                return res.status(404).json({ error: 'Archivo irreparable. Por favor suba de nuevo.' });
+            }
+        }
+        
+        const ext = path.extname(info.nombre_archivo).toLowerCase();
+        let contentType = 'application/pdf';
+        if (ext === '.jpg' || ext === '.jpeg') contentType = 'image/jpeg';
+        else if (ext === '.png') contentType = 'image/png';
+        else if (ext === '.webp') contentType = 'image/webp';
+
+        res.setHeader('Content-Type', contentType);
+        res.setHeader('Content-Disposition', `inline; filename="${info.nombre_archivo}"`);
+        fs.createReadStream(fullPath).pipe(res);
     } catch (err) {
         res.status(500).json({ error: 'Error al visualizar' });
     }

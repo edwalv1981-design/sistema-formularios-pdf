@@ -36,9 +36,10 @@ router.post('/upload', authenticateToken, upload.single('archivo'), async (req, 
         // EJECUCIÓN DEL AGENTE VALIDADOR
         const isValid = await validateDigitalSignature(fullPath);
 
+        const archivoBase64 = fs.readFileSync(fullPath).toString('base64');
         const result = await db.query(
-            'INSERT INTO formularios_firmados (user_id, nombre_archivo, ruta_archivo, is_valid) VALUES ($1, $2, $3, $4) RETURNING id',
-            [userId, req.file.originalname, rutaUrl, isValid]
+            'INSERT INTO formularios_firmados (user_id, nombre_archivo, ruta_archivo, is_valid, archivo_base64) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+            [userId, req.file.originalname, rutaUrl, isValid, archivoBase64]
         );
 
         // BITÁCORA
@@ -96,6 +97,37 @@ router.delete('/:id', authenticateToken, async (req, res) => {
         res.json({ message: 'Eliminado correctamente' });
     } catch (err) {
         res.status(500).json({ error: 'Falla al eliminar' });
+    }
+});
+
+// VISUALIZAR Y RECUPERAR FORMULARIO FIRMADO (Motor de Resiliencia)
+router.get('/view/:id', authenticateToken, async (req, res) => {
+    const { id } = req.params;
+    const userId = req.user.id;
+    try {
+        const result = await db.query('SELECT ruta_archivo, nombre_archivo FROM formularios_firmados WHERE id = $1 AND user_id = $2', [id, userId]);
+        if (result.rows.length === 0) return res.status(404).json({ error: 'Documento no encontrado' });
+        
+        const info = result.rows[0];
+        const fullPath = path.join(process.cwd(), info.rows ? info.rows[0].ruta_archivo.replace(/^\/+/, '') : info.ruta_archivo.replace(/^\/+/, ''));
+        
+        if (!fs.existsSync(fullPath)) {
+            console.log(`[RECOVERY_SIGNED] Reconstruyendo binario firmado desde DB...`);
+            const recovery = await db.query('SELECT archivo_base64 FROM formularios_firmados WHERE id = $1', [id]);
+            if (recovery.rows.length > 0 && recovery.rows[0].archivo_base64) {
+                const dir = path.dirname(fullPath);
+                if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+                fs.writeFileSync(fullPath, Buffer.from(recovery.rows[0].archivo_base64, 'base64'));
+            } else {
+                return res.status(404).json({ error: 'Archivo no recuperable en este momento' });
+            }
+        }
+        
+        res.setHeader('Content-Disposition', `inline; filename="${info.nombre_archivo}"`);
+        res.setHeader('Content-Type', 'application/pdf');
+        fs.createReadStream(fullPath).pipe(res);
+    } catch (err) {
+        res.status(500).json({ error: 'Error al servir el documento firmado' });
     }
 });
 
