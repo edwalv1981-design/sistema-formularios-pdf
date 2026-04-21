@@ -58,8 +58,12 @@ router.post('/', authenticateToken, async (req, res) => {
 
         res.json({ message: 'Guardado correctamente', id: result.rows[0].id });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Falla al guardar edición' });
+        console.error('DB_ERROR_EDICION:', err);
+        res.status(500).json({ 
+            error: 'Falla al guardar edición',
+            detalle: err.message,
+            codigo: err.code 
+        });
     }
 });
 

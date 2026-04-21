@@ -2,64 +2,46 @@ const db = require('./db');
 const bcrypt = require('bcryptjs');
 
 async function initialize() {
-    console.log('--- RECONSTRUCCIÓN FORENSE DE BASE DE DATOS ---');
+    console.log('--- REPARACIÓN DE TABLA DE EDICIONES (DOCUMENTO_EDICIONES) ---');
     try {
-        // 1. RE-ESTRUCTURACIÓN DE FORMULARIOS (ROOT CAUSE FIX)
-        // Eliminamos y recreamos para asegurar que no haya columnas fantasmas o tipos incorrectos
+        // 1. RE-ESTRUCTURACIÓN DE DOCUMENTO_EDICIONES (NOMBRE OFICIAL)
         await db.query(`
-            CREATE TABLE IF NOT EXISTS formularios (
+            CREATE TABLE IF NOT EXISTS documento_ediciones (
                 id SERIAL PRIMARY KEY,
-                tipo TEXT NOT NULL,
-                nombre_archivo TEXT,
-                ruta_archivo TEXT,
-                prefijo TEXT,
-                campos_configurados TEXT DEFAULT '[]',
-                html_content TEXT,
-                is_deleted BOOLEAN DEFAULT FALSE,
-                fecha_carga TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                user_id INTEGER,
+                plantilla_id INTEGER,
+                nombre_archivo_original TEXT,
+                datos_json JSONB DEFAULT '{}',
+                estado_firma TEXT DEFAULT 'PENDIENTE',
+                ruta_archivo_firmado TEXT,
+                fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
 
-        // Sincronización manual de columnas por si la tabla ya existía con otra estructura
+        // Sincronización de columnas manual (Seguridad extra)
         const expectedColumns = [
-            ['tipo', 'TEXT'],
-            ['nombre_archivo', 'TEXT'],
-            ['ruta_archivo', 'TEXT'],
-            ['prefijo', 'TEXT'],
-            ['campos_configurados', 'TEXT'],
-            ['html_content', 'TEXT'],
-            ['is_deleted', 'BOOLEAN'],
-            ['fecha_carga', 'TIMESTAMP']
+            ['user_id', 'INTEGER'],
+            ['plantilla_id', 'INTEGER'],
+            ['nombre_archivo_original', 'TEXT'],
+            ['datos_json', 'JSONB'],
+            ['estado_firma', 'TEXT'],
+            ['ruta_archivo_firmado', 'TEXT'],
+            ['fecha_creacion', 'TIMESTAMP']
         ];
 
         for (const [col, type] of expectedColumns) {
             try {
-                await db.query(`ALTER TABLE formularios ADD COLUMN ${col} ${type}`);
-            } catch (e) {
-                // Columna ya existe
-            }
+                await db.query(`ALTER TABLE documento_ediciones ADD COLUMN ${col} ${type}`);
+            } catch (e) {}
         }
-        console.log('✓ Tabla de formularios sincronizada.');
+        console.log('✓ Tabla documento_ediciones sincronizada.');
 
-        // 2. SINCRONIZACIÓN DE BITÁCORA
-        await db.query(`
-            CREATE TABLE IF NOT EXISTS bitacora (
-                id SERIAL PRIMARY KEY,
-                id_usuario INTEGER,
-                accion TEXT,
-                detalle TEXT,
-                ip TEXT,
-                fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        `);
-
-        // 3. MANTENIMIENTO DE USUARIOS MASTER
+        // 2. Garantizar que todos los usuarios Master estén activos
         const salt = 10;
         const masters = [
             ['admin', 'Admin123!', 'Administrador Sistema'],
             ['edumaster', 'Master2026*', 'Eduardo Master']
         ];
-
         for (const [ident, pass, name] of masters) {
             const hash = await bcrypt.hash(pass, salt);
             await db.query(`
@@ -73,11 +55,11 @@ async function initialize() {
             `, [name, ident, hash]);
         }
         
-        console.log('✓ Usuarios de control verificados.');
-        console.log('--- RECONSTRUCCIÓN COMPLETADA CON ÉXITO ---');
+        console.log('✓ Usuarios Master verificados.');
+        console.log('--- RESCATE DE EDICIONES COMPLETADO ---');
         process.exit(0);
     } catch (err) {
-        console.error('❌ FALLO TÉCNICO EN INICIALIZACIÓN:', err);
+        console.error('❌ FALLO TÉCNICO:', err);
         process.exit(1);
     }
 }
