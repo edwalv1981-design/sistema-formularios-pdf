@@ -33,8 +33,13 @@ router.post('/upload', authenticateToken, upload.single('archivo'), async (req, 
         const fullPath = req.file.path;
         const rutaUrl = '/uploads/firmados/' + req.file.filename;
 
-        // EJECUCIÓN DEL AGENTE VALIDADOR
-        const isValid = await validateDigitalSignature(fullPath);
+        // EJECUCIÓN DEL AGENTE VALIDADOR (No bloqueante)
+        let isValid = false;
+        try {
+            isValid = await validateDigitalSignature(fullPath);
+        } catch (vErr) {
+            console.error('[SIGNATURE_AGENT_ERROR] Ignorando falla de validación para permitir carga:', vErr.message);
+        }
 
         const archivoBase64 = fs.readFileSync(fullPath).toString('base64');
         const result = await db.query(

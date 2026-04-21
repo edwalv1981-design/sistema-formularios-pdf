@@ -4861,7 +4861,7 @@ async function uploadSignedFile() {
     showCustomModal('Procesando...', 'El Agente Experto está validando la firma digital criptográfica...', 'info');
 
     try {
-        const response = await fetch(`${API_URL}/formularios-firmados/upload`, {
+        const response = await fetch('/api/formularios-firmados/upload', {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
             body: formData
@@ -4894,7 +4894,7 @@ async function deleteSignedForm(id) {
 async function downloadSignedForm(id, nombre) {
     showCustomModal('Descargando...', 'Recuperando documento firmado del repositorio seguro...', 'info');
     try {
-        const response = await fetch(`${API_URL}/formularios-firmados/view/${id}`, {
+        const response = await fetch(`/api/formularios-firmados/view/${id}`, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
         if (!response.ok) throw new Error('No se pudo obtener el archivo. Verifique su conexión.');
