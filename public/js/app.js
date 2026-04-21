@@ -63,11 +63,15 @@ function showCustomModal(title, text, type = 'info') {
     titleEl.innerText = title;
     textEl.innerHTML = text;
 
-    // BOTÓN DINÁMICO: Solo se activa/muestra si es un mensaje de ÉXITO
+    // BOTÓN DINÁMICO: Solo se activa/muestra si es un mensaje de ÉXITO (Confirmación de Usuario)
     const btn = document.getElementById('p-modal-btn');
     if(btn) {
-        btn.style.display = (type === 'success') ? 'block' : 'none';
-        btn.innerText = 'Continuar'; 
+        if(type === 'success') {
+            btn.style.display = 'block';
+            btn.innerText = 'Continuar'; 
+        } else {
+            btn.style.display = 'none';
+        }
     }
 
     modal.classList.add('active');
