@@ -2493,7 +2493,10 @@ async function handleDigitalizacionSubmit(e, estado) {
             body: formData
         });
         const data = await res.json();
-        if(!res.ok) return showCustomModal('Error', data.error, 'error');
+        if(!res.ok) {
+            const errorMsg = data.detalle ? `${data.error}: ${data.detalle}` : data.error;
+            return showCustomModal('Error', errorMsg, 'error');
+        }
 
         showCustomModal('Éxito', data.mensaje, 'success');
         document.getElementById('formDigitalizacion').reset();
