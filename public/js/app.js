@@ -4827,7 +4827,7 @@ async function fetchSignedForms() {
                 <td style="padding:12px;"><span class="${badgeClass}" style="padding:4px 8px; border-radius:4px; font-size:10px; font-weight:800;">${badgeText}</span></td>
                 <td style="padding:12px; color:var(--text-muted); font-size:11px;">${new Date(item.fecha_carga).toLocaleString()}</td>
                 <td style="padding:12px; text-align:right;">
-                    <button class="action-btn" onclick="downloadSignedForm('${item.id}')" title="Descargar"><i class="ph ph-download"></i></button>
+                    <button class="action-btn" onclick="downloadSignedForm('${item.id}', '${(item.nombre_archivo || 'documento.pdf').replace(/'/g, "\\'")}')" title="Descargar"><i class="ph ph-download"></i></button>
                     <button class="action-btn btn-danger" onclick="deleteSignedForm('${item.id}')" title="Eliminar"><i class="ph ph-trash"></i></button>
                 </td>
             `;
@@ -4891,26 +4891,26 @@ async function deleteSignedForm(id) {
     }
 }
 
-async function downloadSignedForm(id) {
-    showCustomModal('Descargando...', 'Recuperando formulario firmado y validando integridad binaria...', 'info');
+async function downloadSignedForm(id, nombre) {
+    showCustomModal('Descargando...', 'Recuperando documento firmado del repositorio seguro...', 'info');
     try {
         const response = await fetch(`${API_URL}/formularios-firmados/view/${id}`, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
-        if (!response.ok) throw new Error('No se pudo localizar el documento en el servidor.');
+        if (!response.ok) throw new Error('No se pudo obtener el archivo. Verifique su conexión.');
 
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `Signed_Doc_${id}.pdf`;
+        a.download = nombre || 'documento_firmado.pdf';
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
         closeCustomModal();
     } catch (err) {
-        showCustomModal('Error', err.message, 'error');
+        showCustomModal('Error de Descarga', err.message, 'error');
     }
 }
 
@@ -5014,7 +5014,7 @@ async function fetchPersonalDocs() {
                     <div id="date-container-${doc.id}">${expirationDisplay}</div>
                 </td>
                 <td style="padding:12px; text-align:right;">
-                    <button class="action-btn" onclick="downloadPersonalDoc('${doc.id}')" title="Descargar"><i class="ph ph-download-simple"></i></button>
+                    <button class="action-btn" onclick="downloadPersonalDoc('${doc.id}', '${(doc.nombre_archivo || 'archivo.pdf').replace(/'/g, "\\'")}')" title="Descargar"><i class="ph ph-download-simple"></i></button>
                     <button class="action-btn" onclick="showEditPersonalModal('${doc.id}', '${doc.tipo}')" title="Reemplazar"><i class="ph ph-arrows-clockwise"></i></button>
                     <button class="action-btn btn-danger" onclick="deletePersonalDoc('${doc.id}')" title="Eliminar"><i class="ph ph-trash"></i></button>
                 </td>
@@ -5152,7 +5152,7 @@ async function reemplazarDocumento(id, type) {
     }
 }
 
-async function downloadPersonalDoc(id) {
+async function downloadPersonalDoc(id, nombre) {
     showCustomModal('Descargando...', 'Accediendo al repositorio seguro de documentación...', 'info');
     try {
         const response = await fetch(`${API_URL}/documentacion-personal/view/${id}`, {
@@ -5164,14 +5164,14 @@ async function downloadPersonalDoc(id) {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `Doc_Personal_${id}`;
+        a.download = nombre || `Doc_Personal_${id}`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
         closeCustomModal();
     } catch (err) {
-        showCustomModal('Error', err.message, 'error');
+        showCustomModal('Error de Descarga', err.message, 'error');
     }
 }
 

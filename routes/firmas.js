@@ -136,10 +136,13 @@ router.get('/view/:id', authenticateToken, async (req, res) => {
             }
         }
         
-        const safeName = encodeURIComponent(info.nombre_archivo);
-        res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${safeName}`);
-        res.setHeader('Content-Type', 'application/pdf');
-        fs.createReadStream(fullPath).pipe(res);
+        const safeName = info.nombre_archivo;
+        res.download(fullPath, safeName, (err) => {
+            if (err) {
+                console.error(`[DOWNLOAD_ERROR] ${err.message}`);
+                if(!res.headersSent) res.status(500).json({ error: 'Error al transferir el archivo' });
+            }
+        });
     } catch (err) {
         res.status(500).json({ error: 'Error al servir el documento firmado' });
     }
