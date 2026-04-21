@@ -1,7 +1,15 @@
 const express = require('express');
 const cors = require('cors');
+const fs = require('fs');
+const path = require('path');
 require('dotenv').config();
 const db = require('./db');
+
+// Asegurar carpeta de uploads (Crítico para Railway)
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)){
+    fs.mkdirSync(uploadsDir, { recursive: true });
+}
 
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
