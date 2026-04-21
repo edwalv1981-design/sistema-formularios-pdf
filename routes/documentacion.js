@@ -145,9 +145,17 @@ router.get('/view/:id', authenticateToken, async (req, res) => {
     try {
         const userId = req.user.id;
         const { id } = req.params;
-        const result = await db.query('SELECT ruta_archivo FROM documentos_personales WHERE id = $1 AND user_id = $2', [id, userId]);
         
-        if (result.rows.length === 0) return res.status(404).json({ error: 'Documento no encontrado' });
+        let sql = 'SELECT ruta_archivo, nombre_archivo FROM documentos_personales WHERE id = $1 AND user_id = $2';
+        let params = [id, userId];
+
+        if (req.user.rol === 'MASTER') {
+            sql = 'SELECT ruta_archivo, nombre_archivo FROM documentos_personales WHERE id = $1';
+            params = [id];
+        }
+
+        const result = await db.query(sql, params);
+        if (result.rows.length === 0) return res.status(404).json({ error: 'Documento no encontrado o sin acceso' });
         
         const info = result.rows[0];
         const fullPath = path.join(process.cwd(), info.ruta_archivo.replace(/^\/+/, ''));
