@@ -2,72 +2,41 @@ const db = require('./db');
 const bcrypt = require('bcryptjs');
 
 async function initialize() {
-    console.log('--- INICIANDO RESCATE DE ESQUEMA UNIVERSAL ---');
+    console.log('--- ACTIVANDO MENÚ Y PERMISOS ---');
     try {
-        // 1. Roles
-        await db.query(`CREATE TABLE IF NOT EXISTS roles (id SERIAL PRIMARY KEY, nombre TEXT UNIQUE)`);
-        await db.query(`INSERT INTO roles (id, nombre) VALUES (1, 'Master'), (2, 'Administrador'), (3, 'Usuario') ON CONFLICT DO NOTHING`);
+        // 1. Tablas de estructura de navegación
+        await db.query(`CREATE TABLE IF NOT EXISTS modulos (id SERIAL PRIMARY KEY, nombre TEXT, icono TEXT, ruta TEXT, orden INTEGER)`);
+        await db.query(`CREATE TABLE IF NOT EXISTS permisos (id_rol INTEGER, id_modulo INTEGER, PRIMARY KEY(id_rol, id_modulo))`);
         
-        // 2. Bitácora (El error actual)
-        await db.query(`
-            CREATE TABLE IF NOT EXISTS bitacora (
-                id SERIAL PRIMARY KEY,
-                id_usuario INTEGER,
-                accion TEXT,
-                detalle TEXT,
-                ip TEXT,
-                fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        `);
-        console.log('✓ Tabla bitacora creada.');
-
-        // 3. Usuarios (Asegurar esquema completo)
-        await db.query(`CREATE TABLE IF NOT EXISTS usuarios (id SERIAL PRIMARY KEY, identificacion TEXT UNIQUE)`);
-        const userColumns = [
-            'nombres_completos TEXT',
-            'id_rol INTEGER REFERENCES roles(id)',
-            'password_hash TEXT',
-            'estado TEXT DEFAULT \'ACTIVO\'',
-            'aprobado BOOLEAN DEFAULT TRUE',
-            'intentos_fallidos INTEGER DEFAULT 0',
-            'bloqueado BOOLEAN DEFAULT FALSE'
+        // 2. Insertar Módulos Básicos
+        const modulos = [
+            [1, 'Escritorio', 'fas fa-home', '/dashboard', 1],
+            [2, 'Formularios', 'fas fa-file-alt', '/formularios', 2],
+            [3, 'Ediciones', 'fas fa-edit', '/ediciones', 3],
+            [4, 'Usuarios', 'fas fa-users', '/usuarios', 4],
+            [5, 'Configuración', 'fas fa-cog', '/configuracion', 5]
         ];
-        for (const col of userColumns) {
-            try { await db.query(`ALTER TABLE usuarios ADD COLUMN ${col}`); } catch (e) {}
+
+        for (const mod of modulos) {
+            await db.query(`
+                INSERT INTO modulos (id, nombre, icono, ruta, orden) 
+                VALUES ($1, $2, $3, $4, $5) 
+                ON CONFLICT (id) DO UPDATE SET nombre = EXCLUDED.nombre, icono = EXCLUDED.icono, ruta = EXCLUDED.ruta
+            `, mod);
         }
 
-        // 4. Formularios y Ediciones (Para que el sistema funcione por dentro)
-        await db.query(`
-            CREATE TABLE IF NOT EXISTS formularios (
-                id SERIAL PRIMARY KEY,
-                nombre TEXT,
-                datos JSONB,
-                fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        `);
-        await db.query(`
-            CREATE TABLE IF NOT EXISTS ediciones (
-                id SERIAL PRIMARY KEY,
-                id_formulario INTEGER REFERENCES formularios(id),
-                id_usuario INTEGER,
-                cambios JSONB,
-                fecha_edicion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        `);
-        console.log('✓ Tablas de formularios y ediciones verificadas.');
+        // 3. Asignar Permisos al Rol Master (ID: 1)
+        for (let i = 1; i <= 5; i++) {
+            await db.query(`INSERT INTO permisos (id_rol, id_modulo) VALUES (1, ${i}) ON CONFLICT DO NOTHING`);
+        }
 
-        // 5. Usuario Admin
-        const passwordHash = await bcrypt.hash('Admin123!', 10);
-        await db.query(`
-            INSERT INTO usuarios (nombres_completos, identificacion, password_hash, id_rol, estado, aprobado)
-            VALUES ($1, $2, $3, $4, $5, $6)
-            ON CONFLICT (identificacion) DO UPDATE SET password_hash = EXCLUDED.password_hash
-        `, ['Administrador Root', 'admin', passwordHash, 1, 'ACTIVO', true]);
+        // 4. Asegurar que el usuario admin tenga el rol Master
+        await db.query(`UPDATE usuarios SET id_rol = 1 WHERE identificacion = 'admin'`);
 
-        console.log('--- RESCATE UNIVERSAL COMPLETADO ---');
+        console.log('✓ Menú y permisos inyectados con éxito.');
         process.exit(0);
     } catch (err) {
-        console.error('❌ ERROR CRÍTICO:', err);
+        console.error('❌ ERROR AL ACTIVAR MENÚ:', err);
         process.exit(1);
     }
 }
