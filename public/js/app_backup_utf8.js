@@ -1,6 +1,6 @@
-// app.js
+﻿// app.js
 
-// --- POLÍTICA DE SEGURIDAD EXTREMA: ANTI-RELOAD (F5 Redirect to Login) ---
+// --- POL├ìTICA DE SEGURIDAD EXTREMA: ANTI-RELOAD (F5 Redirect to Login) ---
 (function() {
     const navEntries = performance.getEntriesByType('navigation');
     if (navEntries.length > 0 && navEntries[0].type === 'reload') {
@@ -13,23 +13,23 @@
 
 const API_URL = '/api'; 
 
-// LÓGICA DE SEGURIDAD PARA PARSEO DE USUARIO (Blindaje contra estados indefinidos)
+// L├ôGICA DE SEGURIDAD PARA PARSEO DE USUARIO (Blindaje contra estados indefinidos)
 function getSafeUser() {
     try {
         const userData = localStorage.getItem('user');
         if (!userData || userData === 'undefined') return null;
         return JSON.parse(userData);
 } catch (e) {
-        console.warn('Falla en recuperación de sesión:', e);
+        console.warn('Falla en recuperaci├│n de sesi├│n:', e);
         return null;
     }
 }
 
-// GESTIÓN DE ERRORES GLOBAL (Diagnóstico en Producción)
+// GESTI├ôN DE ERRORES GLOBAL (Diagn├│stico en Producci├│n)
 window.onerror = function(msg, url, line, col, error) {
     console.error(`[CRITICAL_UI_ERROR] ${msg} en ${url}:${line}:${col}`, error);
     if(typeof showCustomModal === 'function') {
-        showCustomModal('Error Crítico de Aplicación', `Se detectó una falla técnica: ${msg}. Por favor, refresque la página (F5).`, 'error');
+        showCustomModal('Error Cr├¡tico de Aplicaci├│n', `Se detect├│ una falla t├®cnica: ${msg}. Por favor, refresque la p├ígina (F5).`, 'error');
     }
     return false;
 };
@@ -84,7 +84,7 @@ function showCustomModal(title, text, type = 'info') {
     titleEl.innerText = title;
     textEl.innerHTML = text;
 
-    // BOTÓN DINÁMICO: Solo se activa/muestra si es un mensaje de ÉXITO (Confirmación de Usuario)
+    // BOT├ôN DIN├üMICO: Solo se activa/muestra si es un mensaje de ├ëXITO (Confirmaci├│n de Usuario)
     const btn = document.getElementById('p-modal-btn');
     if(btn) {
         if(type === 'success') {
@@ -107,23 +107,23 @@ function closeCustomModal() {
 window.alert = function(message) {
     // Detectar si es un mensaje de error por palabras clave
     const msg = String(message).toLowerCase();
-    const isError = msg.includes('error') || msg.includes('falló') || msg.includes('inválido') || 
+    const isError = msg.includes('error') || msg.includes('fall├│') || msg.includes('inv├ílido') || 
                     msg.includes('no se pudo') || msg.includes('denegado') || msg.includes('problema');
     
-    showCustomModal(isError ? 'Atención' : 'Notificación', message, isError ? 'error' : 'success');
+    showCustomModal(isError ? 'Atenci├│n' : 'Notificaci├│n', message, isError ? 'error' : 'success');
 };
 
 // Idiomas
 const translations = {
     es: {
-        logout: 'Cerrar Sesión',
+        logout: 'Cerrar Sesi├│n',
         panel: 'Panel Principal',
-        digitalizacion: 'Digitalización',
+        digitalizacion: 'Digitalizaci├│n',
         digitalizar_doc: 'Digitalizar Documentos',
         historial: 'Historial',
         usuarios: 'Usuarios',
         plantillas: 'Plantillas',
-        bitacora: 'Bitácora',
+        bitacora: 'Bit├ícora',
         enviar: 'Enviar',
         guardar: 'Guardar',
         actualizar: 'Actualizar',
@@ -140,7 +140,7 @@ function setLanguage(lang) {
     // Legacy function, do nothing.
 }
 
-// Inicialización de la aplicación
+// Inicializaci├│n de la aplicaci├│n
 document.addEventListener('DOMContentLoaded', () => {
     checkSession();
     initTheme();
@@ -151,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if(document.getElementById('registerForm')) document.getElementById('registerForm').addEventListener('submit', handleRegister);
     if(document.getElementById('btnLogout')) document.getElementById('btnLogout').addEventListener('click', handleLogout);
 
-    // Iniciar Seguridad si hay sesión
+    // Iniciar Seguridad si hay sesi├│n
     if (localStorage.getItem('token')) {
         startInactivityControl();
         startHeartbeat();
@@ -239,7 +239,7 @@ async function handleLogin(e) {
     const password = passInput.value.trim();
 
     if (!identificacion || !password) {
-        return showCustomModal('Datos Incompletos', 'Por favor ingrese usuario y contraseña.', 'info');
+        return showCustomModal('Datos Incompletos', 'Por favor ingrese usuario y contrase├▒a.', 'info');
     }
 
     // Ocultar link de desbloqueo por defecto en cada intento
@@ -275,7 +275,7 @@ async function handleLogin(e) {
         initDashboard(data.user);
     } catch(err) {
         console.error('Login Error:', err);
-        alert('Error de conexión con el servidor: ' + err.message);
+        alert('Error de conexi├│n con el servidor: ' + err.message);
     }
 }
 
@@ -304,7 +304,7 @@ async function handleRegister(e) {
             return;
         }
 
-        showAlert('register-message', `¡Éxito! Tu código de formulario es: ${data.codigo_unico}. Espera la aprobación del MASTER.`, 'success');
+        showAlert('register-message', `┬í├ëxito! Tu c├│digo de formulario es: ${data.codigo_unico}. Espera la aprobaci├│n del MASTER.`, 'success');
         document.getElementById('registerForm').reset();
     } catch(err) {
         showAlert('register-message', 'Error interno al registrar.', 'error');
@@ -328,11 +328,11 @@ async function handleLogout() {
     clearInterval(countdownTimer);
     clearTimeout(inactivityTimer);
     
-    // Cerrar modal si está abierto
+    // Cerrar modal si est├í abierto
     const modal = document.getElementById('timeout-modal');
     if (modal) modal.classList.remove('active');
 
-    // Redirección total para limpiar memoria
+    // Redirecci├│n total para limpiar memoria
     window.location.href = '/';
 }
 
@@ -367,7 +367,7 @@ function initDashboard(user) {
         const now = new Date();
         const dateStr = now.toLocaleDateString();
         const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        navTime.innerText = `Último Ingreso: ${dateStr} ${timeStr}`;
+        navTime.innerText = `├Ültimo Ingreso: ${dateStr} ${timeStr}`;
     }
     // Iniciar Sistema de Notificaciones
     fetchNotifications();
@@ -423,16 +423,16 @@ function initDashboard(user) {
         navContainer.appendChild(itemContainer);
     });
 
-    // Sistema modificado para no cargar ninguna opción inicialmente
+    // Sistema modificado para no cargar ninguna opci├│n inicialmente
     renderContent('val-welcome', 'Panel de Bienvenida');
 }
 
 function getMenuByRole(rolInput) {
     const menus = [];
-    // Convertir a String y mayúsculas para máxima compatibilidad
+    // Convertir a String y may├║sculas para m├íxima compatibilidad
     const rol = String(rolInput).toUpperCase();
     
-    console.log("Resolviendo menú para rol:", rol); // Diagnóstico
+    console.log("Resolviendo men├║ para rol:", rol); // Diagn├│stico
 
     if(rol === 'MASTER' || rol === '1') {
         menus.push({ id:'val-themes', label: 'Estilo de Interfaz', icon: 'ph ph-paint-brush' });
@@ -441,10 +441,10 @@ function getMenuByRole(rolInput) {
         menus.push({ id:'val-ediciones', label: 'Editar Formularios', icon: 'ph ph-note-pencil' });
         menus.push({ id:'val-signed-forms', label: 'Formularios Firmados', icon: 'ph ph-signature' });
         menus.push({ id:'val-personal-docs', label: 'Documentos Personales', icon: 'ph ph-identification-card' });
-        menus.push({ id:'val-bitacora', label: translations[currentLang].bitacora || 'Bitácora', icon:'ph ph-list-bullets' });
+        menus.push({ id:'val-bitacora', label: translations[currentLang].bitacora || 'Bit├ícora', icon:'ph ph-list-bullets' });
         menus.push({ id:'val-perfil', label: 'Mi Perfil', icon:'ph ph-user-circle', submenus: [
-            { id: 'val-perfil-data', label: 'Información de Usuario', icon: 'ph ph-identification-card' },
-            { id: 'val-perfil-security', label: 'Cambio de Contraseña', icon: 'ph ph-shield-check' }
+            { id: 'val-perfil-data', label: 'Informaci├│n de Usuario', icon: 'ph ph-identification-card' },
+            { id: 'val-perfil-security', label: 'Cambio de Contrase├▒a', icon: 'ph ph-shield-check' }
         ]});
     } else if (rol === 'EMPRESA' || rol === '2') {
         menus.push({ id:'val-themes', label: 'Estilo de Interfaz', icon: 'ph ph-paint-brush' });
@@ -454,17 +454,17 @@ function getMenuByRole(rolInput) {
         menus.push({ id:'val-personal-docs', label: 'Documentos Personales', icon: 'ph ph-identification-card' });
 
         menus.push({ id:'val-perfil', label: 'Mi Perfil', icon:'ph ph-user-circle', submenus: [
-            { id: 'val-perfil-data', label: 'Información de Usuario', icon: 'ph ph-identification-card' },
-            { id: 'val-perfil-security', label: 'Cambio de Contraseña', icon: 'ph ph-shield-check' }
+            { id: 'val-perfil-data', label: 'Informaci├│n de Usuario', icon: 'ph ph-identification-card' },
+            { id: 'val-perfil-security', label: 'Cambio de Contrase├▒a', icon: 'ph ph-shield-check' }
         ]});
     } else if (rol === 'ADICIONAL' || rol === '3') {
         menus.push({ id:'val-themes', label: 'Estilo de Interfaz', icon: 'ph ph-paint-brush' });
         menus.push({ id:'val-signed-forms', label: 'Formularios Firmados', icon: 'ph ph-signature' });
         menus.push({ id:'val-personal-docs', label: 'Documentos Personales', icon: 'ph ph-identification-card' });
-        menus.push({ id:'val-bitacora', label: translations[currentLang].bitacora || 'Bitácora', icon:'ph ph-list-magnifying-glass' });
+        menus.push({ id:'val-bitacora', label: translations[currentLang].bitacora || 'Bit├ícora', icon:'ph ph-list-magnifying-glass' });
         menus.push({ id:'val-perfil', label: 'Mi Perfil', icon:'ph ph-user-circle', submenus: [
-            { id: 'val-perfil-data', label: 'Información de Usuario', icon: 'ph ph-identification-card' },
-            { id: 'val-perfil-security', label: 'Cambio de Contraseña', icon: 'ph ph-shield-check' }
+            { id: 'val-perfil-data', label: 'Informaci├│n de Usuario', icon: 'ph ph-identification-card' },
+            { id: 'val-perfil-security', label: 'Cambio de Contrase├▒a', icon: 'ph ph-shield-check' }
         ]});
     }
     return menus;
@@ -473,12 +473,12 @@ function getMenuByRole(rolInput) {
 function renderContent(menuId, title) {
     document.getElementById('page-title-text').innerText = title;
     
-    // --- LÓGICA DE PINTADO DE MENÚ (Smart Highlight) ---
+    // --- L├ôGICA DE PINTADO DE MEN├Ü (Smart Highlight) ---
     document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
     const sidebarItem = document.querySelector(`.nav-item[data-id="${menuId}"]`);
     if(sidebarItem) {
         sidebarItem.classList.add('active');
-        // Si es un submenú, expandir el padre por si acaso
+        // Si es un submen├║, expandir el padre por si acaso
         const parentSub = sidebarItem.closest('.sub-nav');
         if(parentSub) parentSub.style.display = 'block';
     }
@@ -493,7 +493,7 @@ function renderContent(menuId, title) {
                     <i class="ph-duotone ph-rocket" style="font-size:2rem; color:var(--primary);"></i>
                 </div>
                 <h2 style="font-size:1.25rem; font-weight:600; margin-bottom:12px; color:var(--text-main); letter-spacing:-0.5px;">Bienvenido al Gestor Digital</h2>
-                <p style="font-size:0.9rem; color:var(--text-muted); max-width:420px; line-height:1.6; font-weight:400;">Su sesión está iniciada de forma activa. Para comenzar a trabajar, seleccione una de las opciones del panel de administración principal izquierdo.</p>
+                <p style="font-size:0.9rem; color:var(--text-muted); max-width:420px; line-height:1.6; font-weight:400;">Su sesi├│n est├í iniciada de forma activa. Para comenzar a trabajar, seleccione una de las opciones del panel de administraci├│n principal izquierdo.</p>
             </div>
         `;
     }
@@ -502,11 +502,11 @@ function renderContent(menuId, title) {
         content.innerHTML = `
             <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
                 <div class="glass-card stat-card"><i class="ph-duotone ph-users"></i><h3 id="stat-total">-</h3><p>Usuarios Registrados</p></div>
-                <div class="glass-card stat-card"><i class="ph-duotone ph-spinner-gap"></i><h3 id="stat-pending">-</h3><p>Pendientes Aprobación</p></div>
+                <div class="glass-card stat-card"><i class="ph-duotone ph-spinner-gap"></i><h3 id="stat-pending">-</h3><p>Pendientes Aprobaci├│n</p></div>
             </div>
             <div class="glass-card" style="padding:24px; overflow-x:auto;">
                 <table style="width:100%; text-align:left; border-collapse:collapse;">
-                    <thead><tr style="border-bottom:1px solid var(--border-color); color:var(--text-muted);"><th style="padding:12px;">Usuario/Empresa</th><th>Identificación</th><th>Rol</th><th>Código</th><th>Estado</th><th>Acciones</th></tr></thead>
+                    <thead><tr style="border-bottom:1px solid var(--border-color); color:var(--text-muted);"><th style="padding:12px;">Usuario/Empresa</th><th>Identificaci├│n</th><th>Rol</th><th>C├│digo</th><th>Estado</th><th>Acciones</th></tr></thead>
                     <tbody id="users-table-body"><tr><td colspan="6" style="padding:12px; text-align:center;">Cargando usuarios...</td></tr></tbody>
                 </table>
             </div>
@@ -515,8 +515,8 @@ function renderContent(menuId, title) {
     } else if (menuId === 'val-themes') {
         content.innerHTML = `
             <div class="glass-card" style="padding:40px; display:flex; flex-direction:column; gap:20px; align-items:flex-start;">
-                <h2 style="margin-bottom:10px;"><i class="ph-duotone ph-paint-brush" style="color:var(--primary);"></i> Personalización Visual</h2>
-                <p style="color:var(--text-muted); margin-bottom:20px; font-size:1.1rem;">Selecciona el diseño y esquema de colores que mejor se adapte a tu comodidad. Los cambios se guardarán para tus próximas sesiones de forma automática.</p>
+                <h2 style="margin-bottom:10px;"><i class="ph-duotone ph-paint-brush" style="color:var(--primary);"></i> Personalizaci├│n Visual</h2>
+                <p style="color:var(--text-muted); margin-bottom:20px; font-size:1.1rem;">Selecciona el dise├▒o y esquema de colores que mejor se adapte a tu comodidad. Los cambios se guardar├ín para tus pr├│ximas sesiones de forma autom├ítica.</p>
                 <div style="display:flex; flex-wrap:wrap; gap:25px; width:100%;">
                     
                     <div onclick="setTheme('black')" class="theme-card" style="cursor:pointer; background:#0f1115; border: 2px solid rgba(255,255,255,0.1); border-radius:16px; padding:30px; width:220px; transition:all 0.3s; text-align:center;">
@@ -528,24 +528,24 @@ function renderContent(menuId, title) {
                     <div onclick="setTheme('white')" class="theme-card" style="cursor:pointer; background:#f1f5f9; border: 2px solid rgba(0,0,0,0.15); border-radius:16px; padding:30px; width:220px; transition:all 0.3s; text-align:center;">
                         <div style="width:60px; height:60px; background:linear-gradient(135deg, #ffffff, #e2e8f0); border-radius:50%; margin:0 auto 20px auto; border:2px solid rgba(0,0,0,0.1);"></div>
                         <h4 style="color:#1e293b; font-size:1.1rem;">Luminoso</h4>
-                        <p style="font-size:0.8rem; color:#64748b; margin-top:8px;">Ideal para trabajo de día</p>
+                        <p style="font-size:0.8rem; color:#64748b; margin-top:8px;">Ideal para trabajo de d├¡a</p>
                     </div>
                     
                     <div onclick="setTheme('brown')" class="theme-card" style="cursor:pointer; background:#2d241e; border: 2px solid #d97706; border-radius:16px; padding:30px; width:220px; transition:all 0.3s; text-align:center; box-shadow:0 0 15px rgba(217, 119, 6, 0.15);">
                         <div style="width:60px; height:60px; background:linear-gradient(135deg, #4a382b, #2d241e); border-radius:50%; margin:0 auto 20px auto; border:2px solid #d97706;"></div>
-                        <h4 style="color:#fdf8f6; font-size:1.1rem;">Sepia Élite</h4>
+                        <h4 style="color:#fdf8f6; font-size:1.1rem;">Sepia ├ëlite</h4>
                         <p style="font-size:0.8rem; color:#d2b48c; margin-top:8px;">Efecto descanso visual</p>
                     </div>
                     
                     <div onclick="setTheme('blue')" class="theme-card" style="cursor:pointer; background:#0f172a; border: 2px solid #3b82f6; border-radius:16px; padding:30px; width:220px; transition:all 0.3s; text-align:center; box-shadow:0 0 15px rgba(59, 130, 246, 0.15);">
                         <div style="width:60px; height:60px; background:linear-gradient(135deg, #1e293b, #0f172a); border-radius:50%; margin:0 auto 20px auto; border:2px solid #3b82f6;"></div>
-                        <h4 style="color:#f8fafc; font-size:1.1rem;">Azul Oceánico</h4>
+                        <h4 style="color:#f8fafc; font-size:1.1rem;">Azul Oce├ínico</h4>
                         <p style="font-size:0.8rem; color:#94a3b8; margin-top:8px;">Minimalismo ejecutivo</p>
                     </div>
                     
                     <div onclick="setTheme('purple')" class="theme-card" style="cursor:pointer; background:#1e1b4b; border: 2px solid #a855f7; border-radius:16px; padding:30px; width:220px; transition:all 0.3s; text-align:center; box-shadow:0 0 15px rgba(168, 85, 247, 0.15);">
                         <div style="width:60px; height:60px; background:linear-gradient(135deg, #3b2853, #1e1b4b); border-radius:50%; margin:0 auto 20px auto; border:2px solid #a855f7;"></div>
-                        <h4 style="color:#faf5ff; font-size:1.1rem;">Púrpura Neón</h4>
+                        <h4 style="color:#faf5ff; font-size:1.1rem;">P├║rpura Ne├│n</h4>
                         <p style="font-size:0.8rem; color:#d8b4fe; margin-top:8px;">Modernidad y contraste</p>
                     </div>
 
@@ -557,14 +557,14 @@ function renderContent(menuId, title) {
 
                     <div onclick="setTheme('crimson')" class="theme-card" style="cursor:pointer; background:#450a0a; border: 2px solid #ef4444; border-radius:16px; padding:30px; width:220px; transition:all 0.3s; text-align:center; box-shadow:0 0 15px rgba(239, 68, 68, 0.15);">
                         <div style="width:60px; height:60px; background:linear-gradient(135deg, #7f1d1d, #450a0a); border-radius:50%; margin:0 auto 20px auto; border:2px solid #ef4444;"></div>
-                        <h4 style="color:#fef2f2; font-size:1.1rem;">Rojo Carmesí</h4>
-                        <p style="font-size:0.8rem; color:#fca5a5; margin-top:8px;">Intenso y dinámico</p>
+                        <h4 style="color:#fef2f2; font-size:1.1rem;">Rojo Carmes├¡</h4>
+                        <p style="font-size:0.8rem; color:#fca5a5; margin-top:8px;">Intenso y din├ímico</p>
                     </div>
                     
                     <div onclick="setTheme('cyber')" class="theme-card" style="cursor:pointer; background:#0f172a; border: 2px solid #06b6d4; border-radius:16px; padding:30px; width:220px; transition:all 0.3s; text-align:center; box-shadow:0 0 15px rgba(6, 182, 212, 0.15);">
                         <div style="width:60px; height:60px; background:linear-gradient(135deg, #1e293b, #0f172a); border-radius:50%; margin:0 auto 20px auto; border:2px solid #06b6d4;"></div>
                         <h4 style="color:#f8fafc; font-size:1.1rem;">Cyberpunk Cyan</h4>
-                        <p style="font-size:0.8rem; color:#94a3b8; margin-top:8px;">Tecnológico e innovador</p>
+                        <p style="font-size:0.8rem; color:#94a3b8; margin-top:8px;">Tecnol├│gico e innovador</p>
                     </div>
                     
                     <div onclick="setTheme('slate')" class="theme-card" style="cursor:pointer; background:#334155; border: 2px solid #94a3b8; border-radius:16px; padding:30px; width:220px; transition:all 0.3s; text-align:center; box-shadow:0 0 15px rgba(148, 163, 184, 0.15);">
@@ -576,7 +576,7 @@ function renderContent(menuId, title) {
                     <div onclick="setTheme('sunset')" class="theme-card" style="cursor:pointer; background:#2e1022; border: 2px solid #f43f5e; border-radius:16px; padding:30px; width:220px; transition:all 0.3s; text-align:center; box-shadow:0 0 15px rgba(244, 63, 94, 0.15);">
                         <div style="width:60px; height:60px; background:linear-gradient(135deg, #4a0426, #2e1022); border-radius:50%; margin:0 auto 20px auto; border:2px solid #f43f5e;"></div>
                         <h4 style="color:#fff1f2; font-size:1.1rem;">Atardecer Coral</h4>
-                        <p style="font-size:0.8rem; color:#fda4af; margin-top:8px;">Cálido y creativo</p>
+                        <p style="font-size:0.8rem; color:#fda4af; margin-top:8px;">C├ílido y creativo</p>
                     </div>
 
                 </div>
@@ -592,14 +592,14 @@ function renderContent(menuId, title) {
                     <i class="ph ph-magnifying-glass"></i>
                     <input type="text" id="filter-ediciones" placeholder="Buscar por nombre o fecha..." oninput="filterEdicionesTable()">
                 </div>
-                <button class="btn btn-primary" onclick="renderContent('val-edit-pdf', 'Editor Maestro')"><i class="ph ph-plus"></i> Nueva Edición</button>
+                <button class="btn btn-primary" onclick="renderContent('val-edit-pdf', 'Editor Maestro')"><i class="ph ph-plus"></i> Nueva Edici├│n</button>
             </div>
             <div class="glass-card" style="padding:24px; overflow-x:auto;">
                 <table style="width:100%; text-align:left; border-collapse:collapse;" id="ediciones-table">
                     <thead>
                         <tr style="border-bottom:1px solid var(--border-color); color:var(--text-muted);">
                             <th style="padding:12px;">Documento Original</th>
-                            <th>Fecha de Edición</th>
+                            <th>Fecha de Edici├│n</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -614,7 +614,7 @@ function renderContent(menuId, title) {
         content.innerHTML = `
             <div class="glass-card" style="padding:40px;">
                 <h3 style="margin-bottom:20px; color:var(--primary);"><i class="ph-duotone ph-file-pdf"></i> Repositorio de Plantillas Base</h3>
-                <p style="color:var(--text-muted); margin-bottom: 24px;">Selecciona a qué código pertenecerá la plantilla original.</p>
+                <p style="color:var(--text-muted); margin-bottom: 24px;">Selecciona a qu├® c├│digo pertenecer├í la plantilla original.</p>
                 
                 <form id="formUploadPlantilla" style="border:1px solid rgba(255,255,255,0.05); padding:24px; border-radius:12px; margin-bottom: 40px;">
                     <input type="hidden" id="plantilla_id" value="">
@@ -645,7 +645,7 @@ function renderContent(menuId, title) {
                 <h4 style="margin-bottom:16px; margin-top:32px;">Plantillas Actualmente Activas</h4>
                 <div style="overflow-x:auto;">
                     <table style="width:100%; text-align:left; border-collapse:collapse;">
-                        <thead><tr style="border-bottom:1px solid var(--border-color); color:var(--text-muted);"><th style="padding:12px;">Tipo Código</th><th>Prefijo</th><th>Nombre Original</th><th>Acciones</th><th>Fecha Carga</th></tr></thead>
+                        <thead><tr style="border-bottom:1px solid var(--border-color); color:var(--text-muted);"><th style="padding:12px;">Tipo C├│digo</th><th>Prefijo</th><th>Nombre Original</th><th>Acciones</th><th>Fecha Carga</th></tr></thead>
                         <tbody id="forms-table-body"><tr><td colspan="5" style="padding:12px; text-align:center;">Cargando plantillas...</td></tr></tbody>
                     </table>
                 </div>
@@ -659,7 +659,7 @@ function renderContent(menuId, title) {
             <div class="glass-card" style="padding:40px; max-width:1450px; margin:0 auto;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
                     <div>
-                        <h3 style="color:var(--primary); margin:0;"><i class="ph-duotone ph-magic-wand"></i> Sistema Inteligente de Digitalización (v2.5)</h3>
+                        <h3 style="color:var(--primary); margin:0;"><i class="ph-duotone ph-magic-wand"></i> Sistema Inteligente de Digitalizaci├│n (v2.5)</h3>
                         <p style="color:var(--text-muted); margin-top:8px;">Motor Multi-Agente: Analiza, Infiere y Convierte PDF a Formulario Vivo.</p>
                     </div>
                     <div id="parsing-agent-status" style="display:flex; gap:12px;">
@@ -677,7 +677,7 @@ function renderContent(menuId, title) {
                             <select id="parsing_plantilla" class="custom-select" style="width:100%; border-color:var(--primary); font-family:monospace;" onchange="startSmartParsingProcess()">
                                 <option value="" disabled selected>-- Elige una Plantilla --</option>
                             </select>
-                            <p style="font-size:0.75rem; color:var(--text-muted); margin-top:10px;">El sistema cargará el binario y activará los agentes de inferencia.</p>
+                            <p style="font-size:0.75rem; color:var(--text-muted); margin-top:10px;">El sistema cargar├í el binario y activar├í los agentes de inferencia.</p>
                         </div>
 
                         <div id="smart-tools-panel" style="display:none;">
@@ -697,16 +697,16 @@ function renderContent(menuId, title) {
                         </div>
                     </aside>
 
-                    <!-- Área de Trabajo Principal -->
+                    <!-- ├ürea de Trabajo Principal -->
                     <div style="position:relative;">
                         <div id="smart-canvas-loader" style="text-align:center; padding:150px; background:rgba(0,0,0,0.1); border:2px dashed rgba(255,255,255,0.05); border-radius:24px;">
                             <i class="ph ph-layout" style="font-size:4rem; color:var(--text-muted); opacity:0.2; display:block; margin:0 auto 20px;"></i>
-                            <h4 style="color:var(--text-muted);">Estación de Trabajo Lista</h4>
-                            <p style="color:rgba(255,255,255,0.4); font-size:0.9rem;">Seleccione un documento a la izquierda para iniciar el análisis automático.</p>
+                            <h4 style="color:var(--text-muted);">Estaci├│n de Trabajo Lista</h4>
+                            <p style="color:rgba(255,255,255,0.4); font-size:0.9rem;">Seleccione un documento a la izquierda para iniciar el an├ílisis autom├ítico.</p>
                         </div>
                         
                         <div id="smart-rendering-container" style="display:none; transform-origin: top center;">
-                            <!-- El lienzo dinámico se inyectará aquí -->
+                            <!-- El lienzo din├ímico se inyectar├í aqu├¡ -->
                         </div>
                     </div>
                 </div>
@@ -716,11 +716,11 @@ function renderContent(menuId, title) {
     } else if (menuId === 'val-digit') {
         content.innerHTML = `
             <div class="glass-card" style="padding:40px; max-width:1400px; margin:0 auto;">
-                <h3 style="margin-bottom:20px; color:var(--primary); text-align:center;"><i class="ph-duotone ph-file-pdf"></i> Edición Directa sobre Documento Fiel</h3>
-                <p style="color:var(--text-muted); margin-bottom: 32px; text-align:center;">Haga clic en cualquier parte del documento para <b>escribir</b> o <b>borrar</b> (parche blanco). Use la barra lateral de herramientas para mayor precisión.</p>
+                <h3 style="margin-bottom:20px; color:var(--primary); text-align:center;"><i class="ph-duotone ph-file-pdf"></i> Edici├│n Directa sobre Documento Fiel</h3>
+                <p style="color:var(--text-muted); margin-bottom: 32px; text-align:center;">Haga clic en cualquier parte del documento para <b>escribir</b> o <b>borrar</b> (parche blanco). Use la barra lateral de herramientas para mayor precisi├│n.</p>
                 
                 <form id="formDigitalizacion">
-                    <!-- 1. Selección de Plantilla -->
+                    <!-- 1. Selecci├│n de Plantilla -->
                     <div style="margin-bottom:32px; max-width:600px; margin-left:auto; margin-right:auto; display:flex; gap:12px; align-items:flex-end;">
                         <div style="flex:1;">
                             <label style="display:block; margin-bottom:12px; font-weight:600; text-align:center;">1. Seleccione Documento Base</label>
@@ -780,7 +780,7 @@ function renderContent(menuId, title) {
                             <div style="flex:1;"></div>
                             <div class="toolbar-group" style="border-right:none;">
                                 <button type="button" onclick="setEditorMode('text')" class="btn-tool" style="background:rgba(239, 68, 68, 0.1); color:#ef4444; width:auto; padding:0 12px; font-size:0.85rem; gap:6px; border:1px solid rgba(239, 68, 68, 0.2);">
-                                    <i class="ph-bold ph-x"></i> Salir de Edición
+                                    <i class="ph-bold ph-x"></i> Salir de Edici├│n
                                 </button>
                             </div>
                         </div>
@@ -828,7 +828,7 @@ function renderContent(menuId, title) {
                 </div>
                 <div style="overflow-x:auto;">
                     <table style="width:100%; text-align:left; border-collapse:collapse;">
-                        <thead><tr style="border-bottom:1px solid var(--border-color); color:var(--text-muted);"><th style="padding:12px;">ID</th><th>Estado</th><th>Plantilla Origen</th><th style="min-width:140px;">Evidencia Física</th><th>Fecha</th></tr></thead>
+                        <thead><tr style="border-bottom:1px solid var(--border-color); color:var(--text-muted);"><th style="padding:12px;">ID</th><th>Estado</th><th>Plantilla Origen</th><th style="min-width:140px;">Evidencia F├¡sica</th><th>Fecha</th></tr></thead>
                         <tbody id="digitalizados-table-body"><tr><td colspan="5" style="padding:12px; text-align:center;">Cargando historial...</td></tr></tbody>
                     </table>
                 </div>
@@ -844,29 +844,29 @@ function renderContent(menuId, title) {
         content.innerHTML = `
             <div class="glass-card" style="padding:40px;">
                 <h3 style="margin-bottom:20px; color:var(--primary);"><i class="ph-duotone ph-user-plus"></i> Operadores Adicionales</h3>
-                <p style="color:var(--text-muted); margin-bottom: 24px;">Como Empresa Principal, puedes crear cuentas de Operadores Adicionales autónomos. Estos usuarios heredarán tu contexto comercial y tendrán acceso al módulo de digitalización instatáneamente. Su acceso está regido por tu cuenta.</p>
+                <p style="color:var(--text-muted); margin-bottom: 24px;">Como Empresa Principal, puedes crear cuentas de Operadores Adicionales aut├│nomos. Estos usuarios heredar├ín tu contexto comercial y tendr├ín acceso al m├│dulo de digitalizaci├│n instat├íneamente. Su acceso est├í regido por tu cuenta.</p>
                 
                 <form id="formAdicional" style="border:1px solid rgba(255,255,255,0.05); padding:24px; border-radius:12px; margin-bottom: 40px;">
                     <div class="form-grid">
                         <div class="input-group">
                             <label>Nombre del Operador <span style="color:#ef4444">*</span></label>
-                            <input type="text" id="add_nombres" placeholder="Juan Pérez" required>
+                            <input type="text" id="add_nombres" placeholder="Juan P├®rez" required>
                         </div>
                         <div class="input-group">
-                            <label>Identificación (RUC/CI) <span style="color:#ef4444">*</span></label>
-                            <input type="text" id="add_identificacion" placeholder="Número único" required>
+                            <label>Identificaci├│n (RUC/CI) <span style="color:#ef4444">*</span></label>
+                            <input type="text" id="add_identificacion" placeholder="N├║mero ├║nico" required>
                         </div>
                         <div class="input-group">
-                            <label>Dirección</label>
+                            <label>Direcci├│n</label>
                             <input type="text" id="add_direccion" placeholder="Opcional">
                         </div>
                         <div class="input-group">
-                            <label>Teléfono</label>
+                            <label>Tel├®fono</label>
                             <input type="text" id="add_telefono" placeholder="Opcional">
                         </div>
                         <div class="input-group">
-                            <label>Contraseña de Acceso <span style="color:#ef4444">*</span></label>
-                            <input type="password" id="add_password" placeholder="Mínimo 6 caracteres" required>
+                            <label>Contrase├▒a de Acceso <span style="color:#ef4444">*</span></label>
+                            <input type="password" id="add_password" placeholder="M├¡nimo 6 caracteres" required>
                         </div>
                     </div>
                     <div class="action-buttons" style="margin-top:20px;">
@@ -877,7 +877,7 @@ function renderContent(menuId, title) {
                 <h4 style="margin-bottom: 12px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">Lista de tus Operadores Adicionales</h4>
                 <div style="overflow-x:auto;">
                     <table style="width:100%; text-align:left; border-collapse:collapse;">
-                        <thead><tr style="border-bottom:1px solid var(--border-color); color:var(--text-muted);"><th style="padding:12px;">Identificación</th><th>Nombres</th><th>Estado</th><th>Fecha Alta</th></tr></thead>
+                        <thead><tr style="border-bottom:1px solid var(--border-color); color:var(--text-muted);"><th style="padding:12px;">Identificaci├│n</th><th>Nombres</th><th>Estado</th><th>Fecha Alta</th></tr></thead>
                         <tbody id="adds-table-body"><tr><td colspan="4" style="padding:12px; text-align:center;">Cargando...</td></tr></tbody>
                     </table>
                 </div>
@@ -890,16 +890,16 @@ function renderContent(menuId, title) {
         content.innerHTML = `
             <div class="glass-card" style="padding:40px;">
                 <h3 style="margin-bottom:20px; color:var(--primary);"><i class="ph-duotone ph-shield-check"></i> Permisos Adicionales</h3>
-                <p style="color:var(--text-muted); margin-bottom: 24px;">Administre los niveles de acceso y estado (Activo/Inactivo) de sus Operadores Adicionales. Si revoca el permiso de un operador, este no podrá ingresar al sistema ni digitalizar documentos.</p>
+                <p style="color:var(--text-muted); margin-bottom: 24px;">Administre los niveles de acceso y estado (Activo/Inactivo) de sus Operadores Adicionales. Si revoca el permiso de un operador, este no podr├í ingresar al sistema ni digitalizar documentos.</p>
                 
                 <div style="background:var(--bg-dark); border-radius:12px; border:1px solid rgba(255,255,255,0.05); overflow:hidden;">
                     <table style="width:100%; text-align:left; border-collapse:collapse; font-size:0.9rem;">
                         <thead style="background:rgba(0,0,0,0.3);">
                             <tr style="border-bottom:1px solid var(--border-color); color:var(--text-muted);">
                                 <th style="padding:16px;">Operador</th>
-                                <th style="padding:16px;">Identificación</th>
+                                <th style="padding:16px;">Identificaci├│n</th>
                                 <th style="padding:16px;">Estado Actual</th>
-                                <th style="padding:16px;">Acción de Permiso</th>
+                                <th style="padding:16px;">Acci├│n de Permiso</th>
                             </tr>
                         </thead>
                         <tbody id="perms-table-body">
@@ -912,7 +912,7 @@ function renderContent(menuId, title) {
                 <div id="forms-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:999; align-items:center; justify-content:center;">
                     <div class="glass-card" style="width:400px; padding:30px; border-radius:12px;">
                         <h3 style="margin-bottom:16px; color:var(--primary);"><i class="ph ph-list-checks"></i> Accesos a Plantillas</h3>
-                        <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:20px;">Selecciona los formularios adicionales a los que este operador tendrá acceso.</p>
+                        <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:20px;">Selecciona los formularios adicionales a los que este operador tendr├í acceso.</p>
                         <form id="forms-perms-form" onsubmit="saveFormPermissionsModal(event)">
                             <input type="hidden" id="forms-id-usuario" value="">
                             <div id="forms-checkboxes" style="max-height:300px; overflow-y:auto; margin-bottom:20px; display:flex; flex-direction:column; gap:12px;">
@@ -933,8 +933,8 @@ function renderContent(menuId, title) {
         const user = getSafeUser();
         content.innerHTML = `
             <div class="glass-card" style="padding:40px; max-width:720px; margin:0 auto;">
-                <h3 style="margin-bottom:10px; color:var(--primary);"><i class="ph-duotone ph-identification-card"></i> Información de Identidad</h3>
-                <p style="color:var(--text-muted); margin-bottom: 30px;">Gestione sus datos personales y códigos maestros de la plataforma.</p>
+                <h3 style="margin-bottom:10px; color:var(--primary);"><i class="ph-duotone ph-identification-card"></i> Informaci├│n de Identidad</h3>
+                <p style="color:var(--text-muted); margin-bottom: 30px;">Gestione sus datos personales y c├│digos maestros de la plataforma.</p>
                 
                 <form onsubmit="handleMasterProfileUpdate(event)" style="display:flex; flex-direction:column; gap:20px;">
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
@@ -943,17 +943,17 @@ function renderContent(menuId, title) {
                             <input type="text" id="master-prof-name" value="${user.nombres_completos || ''}" required>
                         </div>
                         <div class="input-group">
-                            <label>Identificación</label>
+                            <label>Identificaci├│n</label>
                             <input type="text" id="master-prof-ident" value="${user.identificacion || ''}" required>
                         </div>
                     </div>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
                         <div class="input-group">
-                            <label>Código Único (Heredable a Operadores)</label>
+                            <label>C├│digo ├Ünico (Heredable a Operadores)</label>
                             <input type="text" id="master-prof-code" value="${user.codigo_unico || ''}" required style="font-family:monospace; color:var(--secondary);">
                         </div>
                         <div class="input-group">
-                            <label>Correo Electrónico (Para recuperación)</label>
+                            <label>Correo Electr├│nico (Para recuperaci├│n)</label>
                             <input type="email" id="master-prof-email" value="${user.email || ''}" required placeholder="ejemplo@correo.com">
                         </div>
                     </div>
@@ -973,24 +973,24 @@ function renderContent(menuId, title) {
                 <form onsubmit="handleMasterPasswordChange(event)" style="display:flex; flex-direction:column; gap:20px;">
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
                         <div class="input-group">
-                            <label>Nueva Contraseña</label>
+                            <label>Nueva Contrase├▒a</label>
                             <div class="input-wrapper">
                                 <i class="ph ph-lock-simple"></i>
-                                <input type="password" id="master-new-pwd" placeholder="Mínimo 6 caracteres" required minlength="6">
+                                <input type="password" id="master-new-pwd" placeholder="M├¡nimo 6 caracteres" required minlength="6">
                                 <i class="ph ph-eye toggle-password" onclick="togglePasswordVisibility(this)"></i>
                             </div>
                         </div>
                         <div class="input-group">
-                            <label>Confirmar Nueva Contraseña</label>
+                            <label>Confirmar Nueva Contrase├▒a</label>
                             <div class="input-wrapper">
                                 <i class="ph ph-lock-simple-check"></i>
-                                <input type="password" id="master-confirm-pwd" placeholder="Repita la contraseña" required minlength="6">
+                                <input type="password" id="master-confirm-pwd" placeholder="Repita la contrase├▒a" required minlength="6">
                                 <i class="ph ph-eye toggle-password" onclick="togglePasswordVisibility(this)"></i>
                             </div>
                         </div>
                     </div>
                     <button type="submit" class="btn-primary" style="background:#ef4444; margin-top:10px;">
-                        <i class="ph ph-shield-check"></i> Actualizar mi Contraseña Maestra
+                        <i class="ph ph-shield-check"></i> Actualizar mi Contrase├▒a Maestra
                     </button>
                 </form>
             </div>
@@ -1002,7 +1002,7 @@ function renderContent(menuId, title) {
                 <!-- 1. RIBBON TOOLBAR -->
                 <div class="pro-ribbon-toolbar" style="grid-column: 1 / span 2;">
                     <div class="ribbon-tabs">
-                        <div class="ribbon-tab active">HERRAMIENTAS DE EDICIÓN</div>
+                        <div class="ribbon-tab active">HERRAMIENTAS DE EDICI├ôN</div>
                     </div>
                     
                     <div class="ribbon-actions" id="ribbon-home">
@@ -1019,11 +1019,11 @@ function renderContent(menuId, title) {
                         <div class="ribbon-group">
                              <button class="ribbon-btn" id="btn-add-text-tool" onclick="toggleFullEditableMode('add-text')">
                                 <i class="ph ph-plus-circle" style="font-size: 18px; color: var(--primary);"></i>
-                                <span style="font-weight: 800;">AÑADIR TEXTO</span>
+                                <span style="font-weight: 800;">A├æADIR TEXTO</span>
                              </button>
                              <button class="ribbon-btn" id="btn-add-check-tool" onclick="toggleFullEditableMode('add-check')">
                                 <i class="ph ph-check-square" style="font-size: 18px; color: #10b981;"></i>
-                                <span style="font-weight: 800;">AÑADIR MARCA</span>
+                                <span style="font-weight: 800;">A├æADIR MARCA</span>
                              </button>
                         </div>
                         <div class="ribbon-group">
@@ -1054,8 +1054,8 @@ function renderContent(menuId, title) {
                 <div class="pro-canvas-area" id="pro-editor-canvas">
                     <div style="text-align:center; color:rgba(255,255,255,0.2); margin-top:150px;">
                         <i class="ph-duotone ph-file-pdf" style="font-size:5rem; display:block; margin-bottom:20px;"></i>
-                        <h2 style="font-weight:400;">Entorno de Edición Profesional</h2>
-                        <p>Seleccione un documento para comenzar la manipulación binaria</p>
+                        <h2 style="font-weight:400;">Entorno de Edici├│n Profesional</h2>
+                        <p>Seleccione un documento para comenzar la manipulaci├│n binaria</p>
                     </div>
                 </div>
 
@@ -1075,12 +1075,12 @@ function renderContent(menuId, title) {
     } else if (menuId === 'val-bitacora') {
         content.innerHTML = `
             <div class="glass-card" style="padding:40px;">
-                <h3 style="margin-bottom:20px; color:var(--primary);"><i class="ph-duotone ph-list-bullets"></i> Bitácora de Auditoría</h3>
+                <h3 style="margin-bottom:20px; color:var(--primary);"><i class="ph-duotone ph-list-bullets"></i> Bit├ícora de Auditor├¡a</h3>
                 <p style="color:var(--text-muted); margin-bottom: 24px;">Registro inmutable de todas las acciones ejecutadas en la plataforma de acuerdo al rango temporal permitido por el ROL de su cuenta.</p>
                 
                 <div style="display:flex; justify-content:space-between; margin-bottom:20px; gap:16px;">
                     <form onsubmit="searchBitacora(event)" style="flex:1; max-width:400px; display:flex;">
-                        <input type="text" id="bita-search-input" placeholder="Buscar por usuario, ID o acción..." style="width:100%; padding:10px; background:var(--bg-dark); border:1px solid rgba(255,255,255,0.1); border-radius:6px 0 0 6px; color:white;">
+                        <input type="text" id="bita-search-input" placeholder="Buscar por usuario, ID o acci├│n..." style="width:100%; padding:10px; background:var(--bg-dark); border:1px solid rgba(255,255,255,0.1); border-radius:6px 0 0 6px; color:white;">
                         <button type="submit" class="btn-primary" style="border-radius:0 6px 6px 0; padding:10px 16px; margin:0;"><i class="ph ph-magnifying-glass"></i></button>
                     </form>
                 </div>
@@ -1092,12 +1092,12 @@ function renderContent(menuId, title) {
                                 <th style="padding:16px;">Fecha / Hora</th>
                                 <th style="padding:16px;">Usuario</th>
                                 <th style="padding:16px;">Rol</th>
-                                <th style="padding:16px;">Acción Genérica</th>
+                                <th style="padding:16px;">Acci├│n Gen├®rica</th>
                                 <th style="padding:16px;">Detalle Forense</th>
                             </tr>
                         </thead>
                         <tbody id="bita-table-body">
-                            <tr><td colspan="5" style="padding:12px; text-align:center;">Consultando bitácora inmutable...</td></tr>
+                            <tr><td colspan="5" style="padding:12px; text-align:center;">Consultando bit├ícora inmutable...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -1110,7 +1110,7 @@ function renderContent(menuId, title) {
         fetchBitacora();
 
     } else {
-        content.innerHTML = `<div class="glass-card" style="padding:40px; text-align:center;"><p>Sección en construcción o conectando la API...</p></div>`;
+        content.innerHTML = `<div class="glass-card" style="padding:40px; text-align:center;"><p>Secci├│n en construcci├│n o conectando la API...</p></div>`;
     }
 }
 
@@ -1165,7 +1165,7 @@ async function resumeBorrador(id) {
         });
         const all = await res.json();
         const doc = all.find(x => x.id == id);
-        if(!doc) return alert('No se encontró el registro');
+        if(!doc) return alert('No se encontr├│ el registro');
 
         renderContent('val-digit', translations[currentLang].digitalizacion);
         
@@ -1208,16 +1208,16 @@ async function fetchUsersList() {
                 const showReject = (u.estado === 'PENDIENTE' || u.estado === 'ACTIVO');
 
                 if (showApprove) {
-                    authBtns += `<button onclick="approveUser(${u.id})" class="btn-ghost" style="padding:4px 8px; border:1px solid var(--secondary); color:var(--secondary); margin-right:4px;" title="Aprobar / Reactivar">✔️</button>`;
+                    authBtns += `<button onclick="approveUser(${u.id})" class="btn-ghost" style="padding:4px 8px; border:1px solid var(--secondary); color:var(--secondary); margin-right:4px;" title="Aprobar / Reactivar">Ô£ö´©Å</button>`;
                 }
                 if (showReject) {
-                    authBtns += `<button onclick="rejectUser(${u.id})" class="btn-ghost" style="padding:4px 8px; border:1px solid #f59e0b; color:#f59e0b; margin-right:4px;" title="Rechazar">✖</button>`;
+                    authBtns += `<button onclick="rejectUser(${u.id})" class="btn-ghost" style="padding:4px 8px; border:1px solid #f59e0b; color:#f59e0b; margin-right:4px;" title="Rechazar">Ô£û</button>`;
                 }
                 if (myUser.rol === 'MASTER' && u.bloqueado) {
                     authBtns += `<button onclick="desbloquearUser(${u.id})" class="btn-ghost" style="padding:4px 8px; border:1px solid #10b981; color:#10b981; margin-right:4px;" title="Quitar Bloqueo de Acceso"><i class="ph-bold ph-lock-key-open"></i></button>`;
                 }
-                authBtns += `<button onclick="deleteUser(${u.id})" class="btn-ghost" style="padding:4px 8px; border:1px solid #ef4444; color:#ef4444; margin-right:4px;" title="Eliminar">🗑️</button>`;
-                authBtns += `<button onclick="resetPassword(${u.id})" class="btn-ghost" style="padding:4px 8px; border:1px solid #6366f1; color:#6366f1;" title="Restablecer Contraseña"><i class="ph ph-key"></i></button>`;
+                authBtns += `<button onclick="deleteUser(${u.id})" class="btn-ghost" style="padding:4px 8px; border:1px solid #ef4444; color:#ef4444; margin-right:4px;" title="Eliminar">­ƒùæ´©Å</button>`;
+                authBtns += `<button onclick="resetPassword(${u.id})" class="btn-ghost" style="padding:4px 8px; border:1px solid #6366f1; color:#6366f1;" title="Restablecer Contrase├▒a"><i class="ph ph-key"></i></button>`;
             } else {
                 authBtns = '<span style="color:var(--text-muted)">-</span>';
             }
@@ -1232,7 +1232,7 @@ async function fetchUsersList() {
             </tr>`;
         });
         
-        document.getElementById('users-table-body').innerHTML = html || '<tr><td colspan="6" style="text-align:center; padding:12px;">No hay usuarios aún</td></tr>';
+        document.getElementById('users-table-body').innerHTML = html || '<tr><td colspan="6" style="text-align:center; padding:12px;">No hay usuarios a├║n</td></tr>';
         document.getElementById('stat-total').innerText = users.length;
         document.getElementById('stat-pending').innerText = pending;
     } catch(err) {
@@ -1253,7 +1253,7 @@ async function approveUser(id) {
 }
 
 async function rejectUser(id) {
-    if (!confirm('¿Estás seguro de rechazar este usuario? No podrá ingresar.')) return;
+    if (!confirm('┬┐Est├ís seguro de rechazar este usuario? No podr├í ingresar.')) return;
     try {
         await fetch(`/api/usuarios/${id}/rechazar`, {
             method: 'PUT',
@@ -1266,7 +1266,7 @@ async function rejectUser(id) {
 }
 
 async function deleteUser(id) {
-    if (!confirm('¿Estás seguro de eliminar COMPLETA e irreversiblemente este usuario?')) return;
+    if (!confirm('┬┐Est├ís seguro de eliminar COMPLETA e irreversiblemente este usuario?')) return;
     try {
         await fetch(`/api/usuarios/${id}`, {
             method: 'DELETE',
@@ -1279,7 +1279,7 @@ async function deleteUser(id) {
 }
 
 async function desbloquearUser(id) {
-    if (!confirm('¿Está seguro de que desea desbloquear preventivamente esta cuenta para que vuelva a intentar credenciales?')) return;
+    if (!confirm('┬┐Est├í seguro de que desea desbloquear preventivamente esta cuenta para que vuelva a intentar credenciales?')) return;
     try {
         const res = await fetch(`/api/usuarios/${id}/desbloquear`, {
             method: 'PUT',
@@ -1295,7 +1295,7 @@ async function desbloquearUser(id) {
 }
 
 function viewDocument(url) {
-    document.getElementById('modal-title').innerText = 'Visualización de Documento';
+    document.getElementById('modal-title').innerText = 'Visualizaci├│n de Documento';
     document.getElementById('modal-body').innerHTML = `
         <div style="margin-bottom: 12px; text-align: right;">
             <a href="${url}" download class="btn-primary" style="padding: 6px 12px; font-size: 0.85rem;"><i class="ph ph-download-simple"></i> Descargar Documento</a>
@@ -1328,7 +1328,7 @@ async function handlePlantillaUpload(e) {
         });
         const data = await res.json();
         if(!res.ok) return showCustomModal('Error', data.error, 'error');
-        showCustomModal('Éxito', data.mensaje, 'success');
+        showCustomModal('├ëxito', data.mensaje, 'success');
         resetPlantillaForm();
         fetchPlantillas();
         loadFormTypesForRegistration();
@@ -1341,7 +1341,7 @@ async function fetchPlantillas() {
     try {
         const res = await fetch(`/api/formularios`);
         const plantillas = await res.json();
-        window.GLOBAL_PLANTILLAS = plantillas; // Cache global para Digitalización
+        window.GLOBAL_PLANTILLAS = plantillas; // Cache global para Digitalizaci├│n
         
         let html = '';
         plantillas.forEach(p => {
@@ -1364,7 +1364,7 @@ async function fetchPlantillas() {
 }
 
 async function descargarPlantillaOriginal(id, nombre) {
-    showCustomModal('Descargando...', 'El Agente está localizando y asegurando el binario original...', 'info');
+    showCustomModal('Descargando...', 'El Agente est├í localizando y asegurando el binario original...', 'info');
     try {
         const response = await fetch(`/api/formularios/view/${id}`, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
@@ -1424,9 +1424,9 @@ ${plantilla.html_content}
 }
 
 async function deletePlantilla(id) {
-    if (!confirm('¿Estás seguro de eliminar esta Plantilla? Se borrará de la lista para todos.')) return;
+    if (!confirm('┬┐Est├ís seguro de eliminar esta Plantilla? Se borrar├í de la lista para todos.')) return;
     try {
-        console.log(`[DELETE] Petición a: /api/formularios/${id}`);
+        console.log(`[DELETE] Petici├│n a: /api/formularios/${id}`);
         const res = await fetch(`/api/formularios/${id}`, {
             method: 'DELETE',
             headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
@@ -1436,10 +1436,10 @@ async function deletePlantilla(id) {
         
         if (!res.ok) {
             console.error('[DELETE] Error del servidor:', data);
-            return showCustomModal('Error de Servidor', `ID: ${id} | Código: ${res.status} | Detalle: ${data.error || 'Desconocido'}`, 'error');
+            return showCustomModal('Error de Servidor', `ID: ${id} | C├│digo: ${res.status} | Detalle: ${data.error || 'Desconocido'}`, 'error');
         }
 
-        showCustomModal('¡Eliminado!', data.mensaje, 'success');
+        showCustomModal('┬íEliminado!', data.mensaje, 'success');
         fetchPlantillas();
         loadFormTypesForRegistration();
     } catch(err) {
@@ -1550,7 +1550,7 @@ async function switchToFullTextEditor() {
     setEditorMode('html');
     const pId = document.getElementById('dig_plantilla').value;
     const plantilla = window.GLOBAL_PLANTILLAS.find(p => p.id == pId);
-    if (!plantilla) return showCustomModal('Selección Requerida', 'Seleccione una plantilla primero.', 'info');
+    if (!plantilla) return showCustomModal('Selecci├│n Requerida', 'Seleccione una plantilla primero.', 'info');
 
     const editor = document.getElementById('html-editable-content');
     
@@ -1578,7 +1578,7 @@ async function switchToFullTextEditor() {
         editor.innerHTML = '';
         editor.style.cssText = 'outline:none; background:#525659; padding:40px; display:flex; flex-direction:column; align-items:center; gap:40px;';
 
-        // Si tenemos HTML guardado, lo parseamos para extraer los contenidos de cada página
+        // Si tenemos HTML guardado, lo parseamos para extraer los contenidos de cada p├ígina
         let savedPagesMap = {};
         if (savedHTML) {
             const tempDiv = document.createElement('div');
@@ -1594,7 +1594,7 @@ async function switchToFullTextEditor() {
             const scale = 1.5;
             const viewport = page.getViewport({ scale });
 
-            // 1. Contenedor de Página
+            // 1. Contenedor de P├ígina
             const pageDiv = document.createElement('div');
             pageDiv.className = 'pdf-page-container';
             pageDiv.dataset.page = i;
@@ -1608,7 +1608,7 @@ async function switchToFullTextEditor() {
             pageDiv.appendChild(canvas);
             await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
 
-            // 3. Capa de Texto (Calibración milimétrica para Motor Nativo)
+            // 3. Capa de Texto (Calibraci├│n milim├®trica para Motor Nativo)
             const textLayerDiv = document.createElement('div');
             textLayerDiv.className = 'pdf-text-layer';
             textLayerDiv.style.cssText = `position:absolute; top:0; left:0; width:${viewport.width}px; height:${viewport.height}px; margin:0; padding:0;`;
@@ -1625,19 +1625,19 @@ async function switchToFullTextEditor() {
                 textLayerDiv.querySelectorAll('.smart-pdf-check-x').forEach(attachCheckHandlers);
                 textLayerDiv.querySelectorAll('input.smart-pdf-input, input.pdf-new-text').forEach(attachInputHandlers);
             } else {
-                // GENERAR CAPA DE BLOQUES SÓLIDOS (v11 - Anti-scramble & Anti-ghosting)
+                // GENERAR CAPA DE BLOQUES S├ôLIDOS (v11 - Anti-scramble & Anti-ghosting)
                 const textContent = await page.getTextContent();
                 
-                // Agrupamos el texto en líneas usando un umbral Y más alto para atrapar tildes
+                // Agrupamos el texto en l├¡neas usando un umbral Y m├ís alto para atrapar tildes
                 const lines = groupTextItems(textContent.items);
 
-                // EXTRACCIÓN Y DETECCIÓN INTELIGENTE DE CAMPOS (Smart Form)
+                // EXTRACCI├ôN Y DETECCI├ôN INTELIGENTE DE CAMPOS (Smart Form)
                 lines.forEach(line => {
                     const strLower = line.str.toLowerCase();
                     const strTrim = line.str.trim();
 
-                    // Detectar si es un Checkbox de fuente Wingdings / Unicode o por su etiqueta semántica
-                    const isCheckboxChars = /^[☐□▫O0oqQ]/.test(strTrim) || /^\[\s*\]/.test(strTrim) || /^\(\s*\)/.test(strTrim);
+                    // Detectar si es un Checkbox de fuente Wingdings / Unicode o por su etiqueta sem├íntica
+                    const isCheckboxChars = /^[ÔÿÉÔûíÔû½O0oqQ]/.test(strTrim) || /^\[\s*\]/.test(strTrim) || /^\(\s*\)/.test(strTrim);
                     const isCheckboxFallback = strLower.includes('personal assets') || 
                                                strLower.includes('financial investments') || 
                                                strLower.includes('business / negocios') || 
@@ -1659,16 +1659,16 @@ async function switchToFullTextEditor() {
                     const originalWidth = (line.width || 0) * viewport.scale;
 
                     if (isCheckbox) {
-                        // Calcular posición: Si fue detectado solo por texto y el texto empieza con letra (no está agrupado el símbolo Wingdings),
-                        // entonces el recuadro físico está a la izquierda. Hay que mover la "✔" a la izquierda.
+                        // Calcular posici├│n: Si fue detectado solo por texto y el texto empieza con letra (no est├í agrupado el s├¡mbolo Wingdings),
+                        // entonces el recuadro f├¡sico est├í a la izquierda. Hay que mover la "Ô£ö" a la izquierda.
                         let baseLeft = tx[4];
                         if (!isCheckboxChars && /^[A-Za-z]/.test(strTrim)) {
-                            baseLeft = tx[4] - (fontSize * 1.5); // Desplazamiento mágico para cubrir el cuadro vectorial
+                            baseLeft = tx[4] - (fontSize * 1.5); // Desplazamiento m├ígico para cubrir el cuadro vectorial
                         }
 
                         const check = document.createElement('div');
                         check.className = 'smart-pdf-check-x';
-                        // Escalar el tamaño de la ✔ para que calce en el cuadro (aprox 1.2x fontSize)
+                        // Escalar el tama├▒o de la Ô£ö para que calce en el cuadro (aprox 1.2x fontSize)
                         check.style.cssText = `
                             position:absolute; 
                             left:${baseLeft - 2}px; 
@@ -1690,11 +1690,11 @@ async function switchToFullTextEditor() {
                             box-sizing: border-box;
                         `;
                         
-                        // Estado local e inicialización
+                        // Estado local e inicializaci├│n
                         check.dataset.checked = 'false';
                         check.textContent = ''; 
                         
-                        // Guardar coordenadas NATIVAS del PDF para exportación perfecta (sin dependencias CSS/Zoom)
+                        // Guardar coordenadas NATIVAS del PDF para exportaci├│n perfecta (sin dependencias CSS/Zoom)
                         check.dataset.nx = line.transform[4];
                         check.dataset.ny = line.transform[5];
                         check.dataset.nw = line.width || fontSize;
@@ -1704,7 +1704,7 @@ async function switchToFullTextEditor() {
                         return; // Break iteration for this line
                     }
 
-                    // --- CREACIÓN TEXTBOX (Si no fue checkbox) ---
+                    // --- CREACI├ôN TEXTBOX (Si no fue checkbox) ---
                     const input = document.createElement('input');
                     input.type = 'text';
                     input.className = 'smart-pdf-input';
@@ -1758,7 +1758,7 @@ async function switchToFullTextEditor() {
                         box-sizing: border-box;
                     `;
 
-                    // Lógica para que el texto de fondo no moleste al escribir
+                    // L├│gica para que el texto de fondo no moleste al escribir
                     input.addEventListener('focus', function() {
                         this.dataset.oldPlaceholder = this.placeholder;
                         this.placeholder = '';
@@ -1775,11 +1775,11 @@ async function switchToFullTextEditor() {
                     });
 
 
-                    // Guardar coordenadas NATIVAS del PDF para máscara y render en pdf-lib
+                    // Guardar coordenadas NATIVAS del PDF para m├íscara y render en pdf-lib
                     input.dataset.nx = line.transform[4];
                     input.dataset.ny = line.transform[5];
                     input.dataset.nw = line.width || 0;
-                    input.dataset.fsize = fontSize / viewport.scale; // Tamaño nativo de la fuente
+                    input.dataset.fsize = fontSize / viewport.scale; // Tama├▒o nativo de la fuente
 
                     textLayerDiv.appendChild(mask);
                     textLayerDiv.appendChild(input);
@@ -1800,7 +1800,7 @@ async function switchToFullTextEditor() {
                 const freeInput = document.createElement('input');
                 freeInput.type = 'text';
                 freeInput.className = 'smart-pdf-input pdf-new-text';
-                freeInput.placeholder = 'Escriba aquí...';
+                freeInput.placeholder = 'Escriba aqu├¡...';
                 freeInput.style.cssText = `position:absolute; left:${x}px; top:${y-10}px; color:black; background:white; border:1px dashed #3b82f6; font-family:'Times New Roman', serif; font-size:12px; padding:2px; z-index:100; width:150px; outline:none; box-sizing:border-box;`;
                 
                 freeInput.addEventListener('blur', () => {
@@ -1848,7 +1848,7 @@ async function switchToFullTextEditor() {
         }
         
     } catch (err) {
-        console.error('Error crítico en editor:', err);
+        console.error('Error cr├¡tico en editor:', err);
         editor.innerHTML = `<div style="padding:50px; color:#ef4444; text-align:center;">
             <h3>Error al cargar el documento</h3>
             <p>${err.message}</p>
@@ -1895,17 +1895,17 @@ function groupTextItems(items) {
     });
     if (current) lines.push(current);
 
-    // 2. OCR Normalization: Fusión de Tildes y Virgulillas Flotantes (Anti-Missing Characters)
+    // 2. OCR Normalization: Fusi├│n de Tildes y Virgulillas Flotantes (Anti-Missing Characters)
     lines.forEach(line => {
         let text = line.str;
         // Juntar base con tilde posterior
-        text = text.replace(/a\s*´|a\s*\u0301/g, 'á').replace(/e\s*´|e\s*\u0301/g, 'é')
-                   .replace(/i\s*´|i\s*\u0301/g, 'í').replace(/o\s*´|o\s*\u0301/g, 'ó')
-                   .replace(/u\s*´|u\s*\u0301/g, 'ú').replace(/n\s*~|n\s*\u0303/g, 'ñ');
+        text = text.replace(/a\s*┬┤|a\s*\u0301/g, '├í').replace(/e\s*┬┤|e\s*\u0301/g, '├®')
+                   .replace(/i\s*┬┤|i\s*\u0301/g, '├¡').replace(/o\s*┬┤|o\s*\u0301/g, '├│')
+                   .replace(/u\s*┬┤|u\s*\u0301/g, '├║').replace(/n\s*~|n\s*\u0303/g, '├▒');
         // Juntar tilde previa con base
-        text = text.replace(/´\s*a|\u0301\s*a/g, 'á').replace(/´\s*e|\u0301\s*e/g, 'é')
-                   .replace(/´\s*i|\u0301\s*i/g, 'í').replace(/´\s*o|\u0301\s*o/g, 'ó')
-                   .replace(/´\s*u|\u0301\s*u/g, 'ú').replace(/~\s*n|\u0303\s*n/g, 'ñ');
+        text = text.replace(/┬┤\s*a|\u0301\s*a/g, '├í').replace(/┬┤\s*e|\u0301\s*e/g, '├®')
+                   .replace(/┬┤\s*i|\u0301\s*i/g, '├¡').replace(/┬┤\s*o|\u0301\s*o/g, '├│')
+                   .replace(/┬┤\s*u|\u0301\s*u/g, '├║').replace(/~\s*n|\u0303\s*n/g, '├▒');
         line.str = text;
     });
 
@@ -1919,8 +1919,8 @@ function attachSpanEditHandlers(span) {
         span.style.color = 'black';
         span.style.boxShadow = '0 0 0 2px #94a3b8';
         
-        // CUIDADO TÉCNICO VITAL: Sustitución a fuente segura. 
-        // No se puede tipear "a" en una fuente PUA si su mapa espera otro código.
+        // CUIDADO T├ëCNICO VITAL: Sustituci├│n a fuente segura. 
+        // No se puede tipear "a" en una fuente PUA si su mapa espera otro c├│digo.
         const originalFont = span.dataset.originalFont || '';
         if (originalFont.toLowerCase().includes('times') || originalFont.toLowerCase().includes('serif')) {
             span.style.fontFamily = '"Times New Roman", Times, serif';
@@ -1937,13 +1937,13 @@ function attachSpanEditHandlers(span) {
         
         const isModified = span.textContent.trim() !== (span.dataset.original || '').trim();
         if (!isModified) {
-            // Restaura la perfección original
+            // Restaura la perfecci├│n original
             span.style.background = 'transparent';
             span.style.color = 'transparent';
             span.style.fontFamily = span.dataset.originalFont; 
         } else {
             // Si hay modificaciones, SE DEBE MANTENER la fuente segura, 
-            // de lo contrario, el texto nuevo escrito se volverá encriptado o vacío.
+            // de lo contrario, el texto nuevo escrito se volver├í encriptado o vac├¡o.
             span.style.background = 'white';
             span.style.color = 'black';
         }
@@ -1963,7 +1963,7 @@ function syncToolbarWithBlock(span) {
         // Intentar matchear la fuente (limpiando comillas)
         const currentFont = style.fontFamily.replace(/['"]/g, '').split(',')[0].trim();
         
-        // Si la fuente no está en el select, la añadimos dinámicamente para dar feedback real al usuario
+        // Si la fuente no est├í en el select, la a├▒adimos din├ímicamente para dar feedback real al usuario
         const exists = Array.from(fontFamilySelect.options).some(o => o.value === currentFont);
         if (!exists) {
             const dynamicOption = new Option(currentFont, currentFont);
@@ -1972,12 +1972,12 @@ function syncToolbarWithBlock(span) {
         fontFamilySelect.value = currentFont;
     }
     
-    // 2. Tamaño (convertir px a pt aproximadamente)
+    // 2. Tama├▒o (convertir px a pt aproximadamente)
     const fontSizeSelect = document.getElementById('tb-font-size');
     if (fontSizeSelect) {
         const px = parseFloat(style.fontSize);
         const pt = Math.round(px * 0.75);
-        // Buscar el valor más cercano en el select
+        // Buscar el valor m├ís cercano en el select
         const options = Array.from(fontSizeSelect.options).map(o => parseInt(o.value));
         const closest = options.reduce((prev, curr) => (Math.abs(curr - pt) < Math.abs(prev - pt) ? curr : prev));
         fontSizeSelect.value = closest;
@@ -1995,7 +1995,7 @@ function syncToolbarWithBlock(span) {
         italicBtn.classList.toggle('active', style.fontStyle === 'italic');
     }
 
-    // 4. Alineación
+    // 4. Alineaci├│n
     const aligns = ['left', 'center', 'right', 'justify'];
     aligns.forEach(a => {
         const btn = document.getElementById(`tb-align-${a}`);
@@ -2010,11 +2010,11 @@ function applyBlockFontSize(size) {
     const span = getFocusedSpan();
     if (span) {
         span.style.fontSize = size + 'pt';
-        // Ajustar posición un poco si el tamaño cambia mucho (opcional, por ahora lo dejamos)
+        // Ajustar posici├│n un poco si el tama├▒o cambia mucho (opcional, por ahora lo dejamos)
     }
 }
 
-// Lógica de Comandos del Editor HTML
+// L├│gica de Comandos del Editor HTML
 function execEditorCommand(cmd, val = null) {
     const span = getFocusedSpan();
     if (!span) return;
@@ -2055,7 +2055,7 @@ async function renderInteractivePDF(existingDoc = null) {
     if (!pId) return;
 
     // Si no estamos reanudando un documento existente, limpiamos anotaciones
-    // para evitar que datos de una sesión anterior se mezclen con la nueva plantilla
+    // para evitar que datos de una sesi├│n anterior se mezclen con la nueva plantilla
     if (!existingDoc) {
         window.CURRENT_EDITING_DOC = null;
         window.CURRENT_ANNOTATIONS = [];
@@ -2073,8 +2073,8 @@ async function renderInteractivePDF(existingDoc = null) {
             <div style="padding: 60px 40px; text-align: center; color: var(--text-muted); background: rgba(0,0,0,0.2); border-radius: 12px; border: 1px dashed rgba(255,255,255,0.1);">
                 <i class="ph-duotone ph-file-dashed" style="font-size: 3.5rem; color: #f59e0b; margin-bottom: 20px;"></i>
                 <h3 style="color: white; margin-bottom: 12px; font-size: 1.4rem;">Plantilla Incompleta</h3>
-                <p style="font-size: 0.95rem; max-width: 400px; margin: 0 auto;">Esta plantilla fue creada en una versión anterior de tu sistema y no tiene un archivo PDF asociado.</p>
-                <p style="font-size: 0.95rem; margin-top: 16px; color: var(--secondary);">Vaya a la sección <strong>Plantillas</strong>, edite este registro y asigne un archivo PDF original para poder digitalizarlo.</p>
+                <p style="font-size: 0.95rem; max-width: 400px; margin: 0 auto;">Esta plantilla fue creada en una versi├│n anterior de tu sistema y no tiene un archivo PDF asociado.</p>
+                <p style="font-size: 0.95rem; margin-top: 16px; color: var(--secondary);">Vaya a la secci├│n <strong>Plantillas</strong>, edite este registro y asigne un archivo PDF original para poder digitalizarlo.</p>
             </div>
         `;
         if (document.getElementById('pdf-tools')) document.getElementById('pdf-tools').style.display = 'none';
@@ -2143,7 +2143,7 @@ async function renderInteractivePDF(existingDoc = null) {
             await page.render({ canvasContext: context, viewport: viewport }).promise;
             pageWrapper.appendChild(canvas);
 
-            // Capa de interacción
+            // Capa de interacci├│n
             const overlay = document.createElement('div');
             overlay.style.position = 'absolute';
             overlay.style.top = '0';
@@ -2257,12 +2257,12 @@ function renderAnnotation(ann, wrapper) {
             input.focus();
         }, 10);
     } else if (ann.type === 'check') {
-        el.innerHTML = '<span style="color:#000; font-size:11px; font-family:serif; font-weight:bold; cursor:move; background:white; padding:1px;">✔️</span>';
+        el.innerHTML = '<span style="color:#000; font-size:11px; font-family:serif; font-weight:bold; cursor:move; background:white; padding:1px;">Ô£ö´©Å</span>';
         ann.val = 'CHECKED';
         el.style.background = 'white'; 
     }
 
-    // Lógica Unificada de Arrastre Mejorada
+    // L├│gica Unificada de Arrastre Mejorada
     let isDragging = false;
     let offsetX, offsetY;
     
@@ -2294,7 +2294,7 @@ function renderAnnotation(ann, wrapper) {
         
         // Destruir coordenadas absolutas NATIVAS del OCR si existen. 
         // Si el usuario interviene el elemento, la coordenada visual porcentual 
-        // pasa a ser la Fiel Verdad universal WYSIWYG para la reconstrucción PDF.
+        // pasa a ser la Fiel Verdad universal WYSIWYG para la reconstrucci├│n PDF.
         if(ann.nx !== undefined) {
             delete ann.nx;
             delete ann.ny;
@@ -2333,7 +2333,7 @@ function clearLastAnnotation() {
     }
 }
 
-// ====== MÓDULO DE MAPEO DE PINES (MASTER) ======
+// ====== M├ôDULO DE MAPEO DE PINES (MASTER) ======
 
 async function initPdfMapping(file) {
     if (!file) return;
@@ -2395,7 +2395,7 @@ function clearPins() {
     redrawPins();
 }
 
-// Escuchador de clicks para creación de pines (Solo en modo Mapeo)
+// Escuchador de clicks para creaci├│n de pines (Solo en modo Mapeo)
 document.addEventListener('click', (e) => {
     const container = document.getElementById('pdf-pins-container');
     if (!container || !container.contains(e.target)) return;
@@ -2405,7 +2405,7 @@ document.addEventListener('click', (e) => {
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
     
-    const pinType = prompt('Tipo de campo:\n1: Texto\n2: Visto (Check)\n3: Fecha\n4: Número', '1');
+    const pinType = prompt('Tipo de campo:\n1: Texto\n2: Visto (Check)\n3: Fecha\n4: N├║mero', '1');
     if (!pinType) return;
 
     const pinName = prompt('Nombre del campo (Ej: FIRMA, CEDULA):');
@@ -2461,7 +2461,7 @@ async function handleDigitalizacionSubmit(e, estado) {
     if (!id_formulario) return alert('Seleccione una plantilla.');
 
     if (estado === 'FINALIZADO' && !evidencia && !draft_id) {
-        // En nuestro caso el sistema fiel no siempre exige evidencia nueva, ya que el documento generado en canvas podría ser la evidencia.
+        // En nuestro caso el sistema fiel no siempre exige evidencia nueva, ya que el documento generado en canvas podr├¡a ser la evidencia.
         // Pero mantenemos la compatibilidad si existe el input.
     }
 
@@ -2502,7 +2502,7 @@ async function handleDigitalizacionSubmit(e, estado) {
                         jsonArray.push({ 
                             page: pageNum, 
                             type: 'check', 
-                            val: '✔', 
+                            val: 'Ô£ö', 
                             x: percentX, 
                             y: percentY,
                             nx: chk.dataset.nx ? parseFloat(chk.dataset.nx) : null,
@@ -2527,7 +2527,7 @@ async function handleDigitalizacionSubmit(e, estado) {
         clone.querySelectorAll('.pdf-text-span').forEach(span => {
             span.style.outline = 'none';
             span.style.boxShadow = 'none';
-            span.removeAttribute('contenteditable'); // Se re-activará al cargar
+            span.removeAttribute('contenteditable'); // Se re-activar├í al cargar
         });
         htmlPersonalizado = clone.innerHTML;
     } else if (window.CURRENT_EDITING_DOC && window.CURRENT_EDITING_DOC.html_content_personalizado) {
@@ -2561,11 +2561,11 @@ async function handleDigitalizacionSubmit(e, estado) {
             return showCustomModal('Error', errorMsg, 'error');
         }
 
-        showCustomModal('Éxito', data.mensaje, 'success');
+        showCustomModal('├ëxito', data.mensaje, 'success');
         document.getElementById('formDigitalizacion').reset();
         if(document.getElementById('dig_draft_id')) document.getElementById('dig_draft_id').value = '';
         const htmlContainer = document.getElementById('html-form-container');
-        if(htmlContainer) htmlContainer.innerHTML = '<p style="text-align:center; color:#666;">Seleccione una plantilla original del menú desplegable.</p>';
+        if(htmlContainer) htmlContainer.innerHTML = '<p style="text-align:center; color:#666;">Seleccione una plantilla original del men├║ desplegable.</p>';
         
         fetchDigitalizacionesHistorial();
     } catch(err) {
@@ -2624,7 +2624,7 @@ async function fetchDigitalizacionesHistorial() {
                 });
             }
 
-            // Extraer resumen de campos (Oculto en UI según solicitud)
+            // Extraer resumen de campos (Oculto en UI seg├║n solicitud)
             // let camposSummary = '';
 
             html += `<tr style="border-bottom:1px solid rgba(255,255,255,0.05); vertical-align:top;">
@@ -2635,7 +2635,7 @@ async function fetchDigitalizacionesHistorial() {
                 <td style="color:var(--text-muted); font-size:0.85rem;">${new Date(d.fecha_registro).toLocaleString()}</td>
             </tr>`;
         });
-        tbody.innerHTML = html || '<tr><td colspan="5" style="text-align:center; padding:12px;">Aún no se ha digitalizado nada.</td></tr>';
+        tbody.innerHTML = html || '<tr><td colspan="5" style="text-align:center; padding:12px;">A├║n no se ha digitalizado nada.</td></tr>';
     } catch(err) {}
 }
 
@@ -2653,7 +2653,7 @@ function resumeBorrador(id) {
     renderInteractivePDF(doc).then(() => {
         if(document.getElementById('dig_draft_id')) document.getElementById('dig_draft_id').value = doc.id;
         
-        // Si tiene contenido HTML, cambiar automáticamente al editor de texto completo
+        // Si tiene contenido HTML, cambiar autom├íticamente al editor de texto completo
         if (doc.html_content_personalizado) {
             switchToFullTextEditor();
         }
@@ -2662,7 +2662,7 @@ function resumeBorrador(id) {
     });
 }
 
-// Nueva función de edición global: Hace lo mismo que el borrador pero sin cambiar de estado a menos que se fuerce
+// Nueva funci├│n de edici├│n global: Hace lo mismo que el borrador pero sin cambiar de estado a menos que se fuerce
 window.editDigitalizacion = function(id) {
     resumeBorrador(id);
     document.getElementById('modal-overlay').style.display = 'none';
@@ -2672,7 +2672,7 @@ window.exportDoc = async function(id, type) {
     if (type === 'pdf') {
         window.open(`/api/digitalizacion/export/${id}/pdf`, '_blank');
     } else if (type === 'email') {
-        const destEmail = prompt('Ingrese el correo electrónico al que desea enviar el registro digitalizado:');
+        const destEmail = prompt('Ingrese el correo electr├│nico al que desea enviar el registro digitalizado:');
         if (!destEmail || !destEmail.trim()) return;
 
         try {
@@ -2761,7 +2761,7 @@ function exportarAPdf() {
 }
 
 async function duplicateDoc(id) {
-    if (!confirm('¿Desea duplicar este registro?')) return;
+    if (!confirm('┬┐Desea duplicar este registro?')) return;
     try {
         const res = await fetch(`/api/digitalizacion/duplicar/${id}`, {
             method: 'POST',
@@ -2775,7 +2775,7 @@ async function duplicateDoc(id) {
 }
 
 async function deleteDoc(id) {
-    if (!confirm('¿Está seguro de eliminar este registro?')) return;
+    if (!confirm('┬┐Est├í seguro de eliminar este registro?')) return;
     try {
         const res = await fetch(`/api/digitalizacion/${id}`, {
             method: 'DELETE',
@@ -2819,7 +2819,7 @@ function exportarAEmail() {
     const doc = window.CURRENT_PREVIEW_DOC;
     if(!doc) return;
     
-    let emailBody = "Adjunto remito la información digitalizada:\n\n";
+    let emailBody = "Adjunto remito la informaci├│n digitalizada:\n\n";
     emailBody += "Documento: " + doc.plantilla_tipo + "\n";
     emailBody += "--------------------------------------\n";
     
@@ -2867,7 +2867,7 @@ async function handleAdicionalUserUpload(e) {
         document.getElementById('formAdicional').reset();
         fetchMyAdicionales();
     } catch(err) {
-        alert('Error en conexión');
+        alert('Error en conexi├│n');
     }
 }
 
@@ -2934,7 +2934,7 @@ async function fetchMyAdicionalesForPerms() {
 }
 
 async function togglePermiso(idUsuario, accion) {
-    if(!confirm(`¿Seguro que desea ${accion === 'aprobar' ? 'CONCEDER' : 'REVOCAR'} el acceso a este operador?`)) return;
+    if(!confirm(`┬┐Seguro que desea ${accion === 'aprobar' ? 'CONCEDER' : 'REVOCAR'} el acceso a este operador?`)) return;
     try {
         const res = await fetch(`/api/usuarios/${idUsuario}/${accion}`, {
             method: 'PUT',
@@ -2944,15 +2944,15 @@ async function togglePermiso(idUsuario, accion) {
         if(!res.ok) return alert(data.error);
         fetchMyAdicionalesForPerms();
     } catch(err) {
-        alert('Error en conexión');
+        alert('Error en conexi├│n');
     }
 }
 
 // ====== MODULO BITACORA INMUTABLE ======
 async function resetPassword(idUsuario) {
-    const newPassword = prompt("Ingrese la NUEVA contraseña para este usuario (mínimo 6 caracteres):");
+    const newPassword = prompt("Ingrese la NUEVA contrase├▒a para este usuario (m├¡nimo 6 caracteres):");
     if (!newPassword) return; 
-    if (newPassword.length < 6) return alert('La contraseña debe tener mínimo 6 caracteres.');
+    if (newPassword.length < 6) return alert('La contrase├▒a debe tener m├¡nimo 6 caracteres.');
 
     try {
         const res = await fetch(`/api/usuarios/${idUsuario}/password`, {
@@ -3000,7 +3000,7 @@ async function openFormPermissionsModal(idUsuario) {
         });
         container.innerHTML = html || 'No hay formularios registrados en el sistema.';
     } catch(err) {
-        container.innerHTML = '<span style="color:red;">Error de conexión.</span>';
+        container.innerHTML = '<span style="color:red;">Error de conexi├│n.</span>';
     }
 }
 
@@ -3080,20 +3080,20 @@ async function fetchBitacora() {
                 <td style="padding:16px; color:rgba(255,255,255,0.8);">${l.detalle}</td>
             </tr>`;
         });
-        tbody.innerHTML = html || '<tr><td colspan="5" style="text-align:center; padding:12px;">Sin registros en este periodo o búsqueda.</td></tr>';
+        tbody.innerHTML = html || '<tr><td colspan="5" style="text-align:center; padding:12px;">Sin registros en este periodo o b├║squeda.</td></tr>';
 
         if (pagContainer) {
             pagContainer.innerHTML = `
                 <span style="color:var(--text-muted); font-size:0.9rem; margin-right:auto;">Total: ${pag.total} registros</span>
                 <button class="btn-ghost" style="padding:8px 12px; ${pag.page <= 1 ? 'opacity:0.3; pointer-events:none;' : ''}" onclick="changeBitaPage(${pag.page - 1})"><i class="ph ph-caret-left"></i> Anterior</button>
-                <span style="color:var(--primary); font-weight:bold; margin:0 8px;">Página ${pag.page} de ${pag.totalPages || 1}</span>
+                <span style="color:var(--primary); font-weight:bold; margin:0 8px;">P├ígina ${pag.page} de ${pag.totalPages || 1}</span>
                 <button class="btn-ghost" style="padding:8px 12px; ${pag.page >= pag.totalPages ? 'opacity:0.3; pointer-events:none;' : ''}" onclick="changeBitaPage(${pag.page + 1})">Siguiente <i class="ph ph-caret-right"></i></button>
             `;
         }
     } catch(err) {}
 }
 
-// ====== FUNCIONES DE EXPORTACIÓN Y GESTIÓN BACKEND (Módulo Digitalización Global) ======
+// ====== FUNCIONES DE EXPORTACI├ôN Y GESTI├ôN BACKEND (M├│dulo Digitalizaci├│n Global) ======
 
 async function guardarCambiosModal(id) {
     const area = document.getElementById('editable-area-modal');
@@ -3133,9 +3133,9 @@ async function guardarCambiosModal(id) {
 
         alert(`Documento guardado como ${estado}.`);
         fetchDigitalizacionesHistorial(); // Recargar tabla fondo
-        openPreviewModal(id); // Refrescar modal (quita highlights si ya se llenó)
+        openPreviewModal(id); // Refrescar modal (quita highlights si ya se llen├│)
     } catch (err) {
-        alert('Error de conexión al guardar cambios.');
+        alert('Error de conexi├│n al guardar cambios.');
     }
 }
 
@@ -3146,10 +3146,10 @@ function descargarBackendPdf(id) {
 
 
 function abrirModalEmail(id) {
-    const email = prompt("Ingrese el correo electrónico del destinatario:");
+    const email = prompt("Ingrese el correo electr├│nico del destinatario:");
     if (!email) return;
 
-    if (!confirm(`¿Enviar el documento PDF a ${email}?`)) return;
+    if (!confirm(`┬┐Enviar el documento PDF a ${email}?`)) return;
 
     enviarCorreoBackend(id, email);
 }
@@ -3164,7 +3164,7 @@ async function enviarCorreoBackend(id, email) {
             },
             body: JSON.stringify({
                 email: email,
-                asunto: 'Documento Digitalizado - Sistema de Gestión',
+                asunto: 'Documento Digitalizado - Sistema de Gesti├│n',
                 mensaje: 'Se adjunta el documento solicitado generado desde el sistema.'
             })
         });
@@ -3173,7 +3173,7 @@ async function enviarCorreoBackend(id, email) {
         if (!res.ok) return alert(data.error || 'Error al enviar correo');
         alert(data.mensaje);
     } catch (err) {
-        alert('Error de conexión al enviar correo.');
+        alert('Error de conexi├│n al enviar correo.');
     }
 }
 
@@ -3209,7 +3209,7 @@ async function handleMasterProfileUpdate(e) {
         const updatedUser = { ...user, ...data.user };
         localStorage.setItem('user', JSON.stringify(updatedUser));
         
-        showCustomModal('¡Éxito!', 'Perfil actualizado correctamente.', 'success');
+        showCustomModal('┬í├ëxito!', 'Perfil actualizado correctamente.', 'success');
         initDashboard(updatedUser); // Refrescar UI (nombre, etc)
     } catch (err) {
         showCustomModal('Error', 'Error conectando con el servidor para actualizar el perfil.', 'error');
@@ -3223,10 +3223,10 @@ async function handleMasterPasswordChange(e) {
     const confirmPwd = document.getElementById('master-confirm-pwd').value;
 
     if (newPwd !== confirmPwd) {
-        return alert('Las contraseñas no coinciden.');
+        return alert('Las contrase├▒as no coinciden.');
     }
 
-    if (!confirm('¿Está seguro de que desea actualizar su contraseña maestra? Se cerrará la sesión actual.')) {
+    if (!confirm('┬┐Est├í seguro de que desea actualizar su contrase├▒a maestra? Se cerrar├í la sesi├│n actual.')) {
         return;
     }
 
@@ -3245,10 +3245,10 @@ async function handleMasterPasswordChange(e) {
         const data = await res.json();
         if (!res.ok) return alert(data.error);
 
-        alert('Contraseña actualizada con éxito. Por seguridad, debe volver a ingresar.');
+        alert('Contrase├▒a actualizada con ├®xito. Por seguridad, debe volver a ingresar.');
         handleLogout();
     } catch (err) {
-        alert('Error conectando con el servidor para actualizar contraseña.');
+        alert('Error conectando con el servidor para actualizar contrase├▒a.');
     }
 }
 function showUnlockView() {
@@ -3259,7 +3259,7 @@ function showUnlockView() {
 
 async function handleRequestUnlockPIN() {
     const ident = document.getElementById('unlock-ident-req').value;
-    if(!ident) return alert('Ingrese su identificación');
+    if(!ident) return alert('Ingrese su identificaci├│n');
 
     try {
         const res = await fetch(`/api/usuarios/request-unlock`, {
@@ -3270,7 +3270,7 @@ async function handleRequestUnlockPIN() {
         const data = await res.json();
         if(!res.ok) return showCustomModal('Fallo de Seguridad', data.error, 'error');
 
-        showCustomModal('Código Enviado', data.mensaje, 'success');
+        showCustomModal('C├│digo Enviado', data.mensaje, 'success');
         if(data.previewUrl) window.open(data.previewUrl, '_blank'); // Para pruebas con Ethereal
 
         document.getElementById('unlock-step-1').style.display = 'none';
@@ -3294,16 +3294,16 @@ async function handleVerifyAndUnlockMaster() {
             body: JSON.stringify({ identificacion: ident, code: code, newPassword: pwd })
         });
         const data = await res.json();
-        if(!res.ok) return showCustomModal('Error de Código', data.error, 'error');
+        if(!res.ok) return showCustomModal('Error de C├│digo', data.error, 'error');
 
-        showCustomModal('¡Cuentas Desbloqueada!', data.mensaje, 'success');
+        showCustomModal('┬íCuentas Desbloqueada!', data.mensaje, 'success');
         toggleView('view-login');
     } catch(err) {
-        showCustomModal('Error', 'Error en el proceso de verificación.', 'error');
+        showCustomModal('Error', 'Error en el proceso de verificaci├│n.', 'error');
     }
 }
 
-// ==== DEFINICIÓN CENTRALIZADA DE MANEJADORES DE SMART PDF ====
+// ==== DEFINICI├ôN CENTRALIZADA DE MANEJADORES DE SMART PDF ====
 function attachCheckHandlers(check) {
     if(check.dataset.initialized === 'true') return;
     check.dataset.initialized = 'true';
@@ -3313,7 +3313,7 @@ function attachCheckHandlers(check) {
     });
     check.addEventListener('mouseleave', () => {
         if (check.dataset.checked !== 'true') check.style.background = 'rgba(56, 189, 248, 0.2)';
-        else check.style.background = 'white'; // Blanco sólido al estar marcado para ocultar fondo
+        else check.style.background = 'white'; // Blanco s├│lido al estar marcado para ocultar fondo
     });
     check.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -3324,9 +3324,9 @@ function attachCheckHandlers(check) {
             check.setAttribute('data-val', '');
         } else {
             check.dataset.checked = 'true';
-            check.textContent = '✔';
+            check.textContent = 'Ô£ö';
             check.style.background = 'white';
-            check.setAttribute('data-val', '✔'); 
+            check.setAttribute('data-val', 'Ô£ö'); 
         }
     });
 }
@@ -3356,7 +3356,7 @@ function attachInputHandlers(input) {
 
 
 // =========================================================================
-// ==== MÓDULO DE DIGITALIZACIÓN INTELIGENTE (MULTI-AGENTE v2.5) ====
+// ==== M├ôDULO DE DIGITALIZACI├ôN INTELIGENTE (MULTI-AGENTE v2.5) ====
 // =========================================================================
 
 let SMART_CURRENT_TOOL = 'text';
@@ -3393,7 +3393,7 @@ async function startSmartParsingProcess() {
 
     const plantilla = window.GLOBAL_PLANTILLAS.find(p => p.id == pId);
     if(!plantilla) {
-        showCustomModal('Aviso', 'No se encontró la información de la plantilla seleccionada.', 'info');
+        showCustomModal('Aviso', 'No se encontr├│ la informaci├│n de la plantilla seleccionada.', 'info');
         return;
     }
     
@@ -3431,18 +3431,18 @@ async function startSmartParsingProcess() {
             if(b) { b.classList.remove('active', 'processing'); }
         });
 
-        // Pipeline de Agentes Ultra-Rápido
+        // Pipeline de Agentes Ultra-R├ípido
         if(badges.parser) {
             badges.parser.classList.add('processing');
             document.getElementById('parsing-step-text').innerText = "Parser Agent: Analizando estructura...";
-            await new Promise(r => setTimeout(r, 200)); // Latencia mínima para feedback
+            await new Promise(r => setTimeout(r, 200)); // Latencia m├¡nima para feedback
             badges.parser.classList.remove('processing');
             badges.parser.classList.add('active');
         }
 
         if(badges.layout) {
             badges.layout.classList.add('processing');
-            document.getElementById('parsing-step-text').innerText = "Layout Agent: Identificando geometrías...";
+            document.getElementById('parsing-step-text').innerText = "Layout Agent: Identificando geometr├¡as...";
             await new Promise(r => setTimeout(r, 250));
             badges.layout.classList.remove('processing');
             badges.layout.classList.add('active');
@@ -3456,7 +3456,7 @@ async function startSmartParsingProcess() {
             badges.ocr.classList.add('active');
         }
 
-        document.getElementById('parsing-step-text').innerText = "Generando Estación de Trabajo en Tiempo Real...";
+        document.getElementById('parsing-step-text').innerText = "Generando Estaci├│n de Trabajo en Tiempo Real...";
         await renderSmartWorkspace(plantilla);
 
     } catch (err) {
@@ -3479,7 +3479,7 @@ async function renderSmartWorkspace(plantilla) {
 
     container.innerHTML = '';
     
-    // Cargar PDF vía PDF.js usando la ruta directa del archivo ya disponible
+    // Cargar PDF v├¡a PDF.js usando la ruta directa del archivo ya disponible
     const pdfUrl = plantilla.ruta_archivo;
     const loadingTask = pdfjsLib.getDocument(pdfUrl);
     const pdf = await loadingTask.promise;
@@ -3527,11 +3527,11 @@ async function renderSmartWorkspace(plantilla) {
         });
         pageWrapper.appendChild(interactionLayer);
 
-        // --- AGENTE DE AUTO-INFERENCIA (Módulo Pro OCR: PDFgear Style) ---
+        // --- AGENTE DE AUTO-INFERENCIA (M├│dulo Pro OCR: PDFgear Style) ---
         const textContent = await page.getTextContent();
         
-        // El Agente de Layout analiza coordenadas y predice áreas de entrada
-        const existingPositions = []; // Para evitar duplicados en la misma línea
+        // El Agente de Layout analiza coordenadas y predice ├íreas de entrada
+        const existingPositions = []; // Para evitar duplicados en la misma l├¡nea
 
         textContent.items.forEach((item, index) => {
             const str = item.str.trim();
@@ -3539,23 +3539,23 @@ async function renderSmartWorkspace(plantilla) {
             const x = tx[4] * 1.5;
             const y = viewport.height - (tx[5] * 1.5);
             
-            // Patrones de detección:
+            // Patrones de detecci├│n:
             // 1. Labels seguidos de ":" o espacios en la DB
-            // 2. Líneas de puntos o guiones bajos largos
-            // 3. Espacios vacíos significativos después de un texto corto
+            // 2. L├¡neas de puntos o guiones bajos largos
+            // 3. Espacios vac├¡os significativos despu├®s de un texto corto
             
             const isLabel = str.endsWith(':') || (str.length > 3 && str.length < 30);
             
             if (isLabel) {
-                // Predecimos que después de un label viene un input
-                // A menos que el siguiente item de texto esté demasiado cerca
+                // Predecimos que despu├®s de un label viene un input
+                // A menos que el siguiente item de texto est├® demasiado cerca
                 const nextItem = textContent.items[index + 1];
                 let shouldAdd = true;
                 
                 if (nextItem) {
                     const nextX = nextItem.transform[4] * 1.5;
                     const nextY = viewport.height - (nextItem.transform[5] * 1.5);
-                    // Si el siguiente texto está en la misma línea y muy cerca, es contenido, no vacío
+                    // Si el siguiente texto est├í en la misma l├¡nea y muy cerca, es contenido, no vac├¡o
                     if (Math.abs(nextY - y) < 5 && (nextX - (x + item.width*1.5)) < 50) {
                         shouldAdd = false;
                     }
@@ -3565,7 +3565,7 @@ async function renderSmartWorkspace(plantilla) {
                     const fieldX = x + (item.width * 1.5) + 12;
                     const fieldY = y - 18;
                     
-                    // Verificación de duplicidad en la misma línea
+                    // Verificaci├│n de duplicidad en la misma l├¡nea
                     const isDuplicate = existingPositions.some(pos => 
                         Math.abs(pos.y - fieldY) < 10 && Math.abs(pos.x - fieldX) < 100
                     );
@@ -3594,7 +3594,7 @@ async function runFullAutoInferenceAgente() {
     const pdf = SMART_SELECTED_PLANTILLA_PDF_OBJ;
     let fieldsFound = 0;
 
-    showCustomModal('Agentes Activos', 'Analizando geometría y vacíos del documento (Structural Brain)...', 'info');
+    showCustomModal('Agentes Activos', 'Analizando geometr├¡a y vac├¡os del documento (Structural Brain)...', 'info');
 
     for (const pageWrapper of pagesWrappers) {
         const pageNum = parseInt(pageWrapper.dataset.page);
@@ -3602,7 +3602,7 @@ async function runFullAutoInferenceAgente() {
         const textContent = await page.getTextContent();
         const viewport = page.getViewport({ scale: 1.5 });
         
-        // Agrupar items por línea (Y) para analizar huecos
+        // Agrupar items por l├¡nea (Y) para analizar huecos
         const lines = {};
         textContent.items.forEach(item => {
             const y = Math.round(item.transform[5] * 1.5);
@@ -3618,7 +3618,7 @@ async function runFullAutoInferenceAgente() {
                 const str = item.str.trim();
                 const fontSize = item.transform[0] * 1.5;
                 
-                // Ignorar títulos (fuentes grandes) y textos muy cortos de ruido
+                // Ignorar t├¡tulos (fuentes grandes) y textos muy cortos de ruido
                 if (fontSize > 18 || str.length < 2) return;
 
                 const xStart = item.transform[4] * 1.5;
@@ -3631,7 +3631,7 @@ async function runFullAutoInferenceAgente() {
                     const nextXStart = nextItem.transform[4] * 1.5;
                     gapWidth = nextXStart - xEnd;
                 } else {
-                    // Si es el último item de la línea, el hueco es hasta el margen derecho (promedio 85% del viewport)
+                    // Si es el ├║ltimo item de la l├¡nea, el hueco es hasta el margen derecho (promedio 85% del viewport)
                     gapWidth = (viewport.width * 0.9) - xEnd;
                 }
 
@@ -3641,7 +3641,7 @@ async function runFullAutoInferenceAgente() {
                 if (isPotentialLabel && gapWidth > 60) {
                     const fieldX = xEnd + 5;
                     const fieldY = yTop - 18;
-                    const finalWidth = Math.min(gapWidth - 10, 400); // Limitar ancho para no invadir márgenes
+                    const finalWidth = Math.min(gapWidth - 10, 400); // Limitar ancho para no invadir m├írgenes
 
                     addSmartElement(pageWrapper, fieldX, fieldY, 'text', str.replace(':', ''), true);
                     
@@ -3657,19 +3657,19 @@ async function runFullAutoInferenceAgente() {
 
     setTimeout(() => {
         closeCustomModal();
-        showCustomModal('Análisis Estructural', `Agente Pro-Layout ha identificado ${fieldsFound} zonas de llenado analizando la geometría del documento.`, 'success');
+        showCustomModal('An├ílisis Estructural', `Agente Pro-Layout ha identificado ${fieldsFound} zonas de llenado analizando la geometr├¡a del documento.`, 'success');
     }, 500);
 }
 
 async function addSmartElement(parent, x, y, type = SMART_CURRENT_TOOL, preLabel = "", isAuto = false) {
-    // 0. Regla de Oro Profesionales: Evitar duplicidad en la misma línea
+    // 0. Regla de Oro Profesionales: Evitar duplicidad en la misma l├¡nea
     const existing = parent.querySelectorAll('.smart-element');
     for (let overlap of existing) {
         const oX = parseFloat(overlap.style.left);
         const oY = parseFloat(overlap.style.top);
-        // Si hay un elemento a menos de 10px de altura (misma línea) y 150px de ancho, bloqueamos
+        // Si hay un elemento a menos de 10px de altura (misma l├¡nea) y 150px de ancho, bloqueamos
         if (Math.abs(oY - y) < 8 && Math.abs(oX - x) < 150 && !isAuto) {
-            console.log('[Agent Logic] Bloqueo de duplicidad: Ya existe un campo en esta línea.');
+            console.log('[Agent Logic] Bloqueo de duplicidad: Ya existe un campo en esta l├¡nea.');
             return; 
         }
     }
@@ -3696,7 +3696,7 @@ async function addSmartElement(parent, x, y, type = SMART_CURRENT_TOOL, preLabel
             if(pdf) {
                 const page = await pdf.getPage(pageNum);
                 const textContent = await page.getTextContent();
-                // Layout Agent: Heurística de proximidad espacial
+                // Layout Agent: Heur├¡stica de proximidad espacial
                 const closest = textContent.items.reduce((prev, curr) => {
                     const tx = curr.transform;
                     // Escalar coordenadas del PDF (viewport 1.5) a coordenadas del lienzo
@@ -3730,13 +3730,13 @@ async function addSmartElement(parent, x, y, type = SMART_CURRENT_TOOL, preLabel
         el.innerHTML = `<div class="smart-check-box"></div>`;
         el.onclick = (e) => {
             const div = el.querySelector('.smart-check-box');
-            div.innerText = div.innerText === '✔' ? '' : '✔';
+            div.innerText = div.innerText === 'Ô£ö' ? '' : 'Ô£ö';
             e.stopPropagation();
         };
     } else if (type === 'select') {
          el.innerHTML = `
             <select style="width:100%; border:none; background:#fff; height:100%; font-size:0.7rem; font-weight:700; cursor:pointer;">
-                <option value="SI">SÍ</option>
+                <option value="SI">S├ì</option>
                 <option value="NO">NO</option>
             </select>
             <div class="smart-element-resizer"></div>
@@ -3771,7 +3771,7 @@ async function addSmartElement(parent, x, y, type = SMART_CURRENT_TOOL, preLabel
     // Menu contextual
     el.oncontextmenu = (e) => {
         e.preventDefault();
-        if (confirm('¿Eliminar este campo inteligente?')) el.remove();
+        if (confirm('┬┐Eliminar este campo inteligente?')) el.remove();
     };
 
     // Resizer Pro
@@ -3798,7 +3798,7 @@ async function addSmartElement(parent, x, y, type = SMART_CURRENT_TOOL, preLabel
 }
 
 function clearSmartCanvas() {
-    if(confirm('¿Seguro que desea limpiar todas las inferencias del lienzo?')) {
+    if(confirm('┬┐Seguro que desea limpiar todas las inferencias del lienzo?')) {
         document.querySelectorAll('.smart-element').forEach(el => el.remove());
     }
 }
@@ -3821,13 +3821,13 @@ async function handleSmartSubmit(estado) {
     });
 
     // Simulando Agente de Guardado
-    showCustomModal('Procesando', 'Generando documento final a través del Agente de Salida...', 'info');
+    showCustomModal('Procesando', 'Generando documento final a trav├®s del Agente de Salida...', 'info');
     
     try {
-        // Aquí llamaríamos a la API para persistir y generar PDF
-        // Como demostración, lanzaremos el éxito
+        // Aqu├¡ llamar├¡amos a la API para persistir y generar PDF
+        // Como demostraci├│n, lanzaremos el ├®xito
         await new Promise(r => setTimeout(r, 2000));
-        showCustomModal('¡Éxito!', `Documento digitalizado guardado con estado ${estado}. Se ha generado el registro de historial.`, 'success');
+        showCustomModal('┬í├ëxito!', `Documento digitalizado guardado con estado ${estado}. Se ha generado el registro de historial.`, 'success');
         renderContent('val-doc-parsing', 'Digitalizar Documentos'); // Reload
     } catch (err) {
         showCustomModal('Error', 'Fallo en la persistencia del modelo intermedio.', 'error');
@@ -3848,7 +3848,7 @@ let ACTIVE_PRO_FIELD_ID = null; // Tracking del campo seleccionado para formateo
 
 
 async function startFullProEditor(plantilla) {
-    // RESET MASIVO DE ESTADO GLOBAL PARA NUEVA EDICIÓN
+    // RESET MASIVO DE ESTADO GLOBAL PARA NUEVA EDICI├ôN
     window.PRO_DRAFT_FIELDS = [];
     window.PRO_UNDO_STACK = [];
     window.PRO_REDO_STACK = [];
@@ -3857,18 +3857,18 @@ async function startFullProEditor(plantilla) {
     window.CURRENT_PLANTILLA_ID = plantilla.id; // GUARDAMOS EL ID DEL DOC ABIERTO
     const canvasArea = document.getElementById('pro-editor-canvas');
     if(!canvasArea) return;
-    canvasArea.innerHTML = '<div class="loader-spinner"></div><p style="color:white; margin-top:10px;">Cargando Suite de Edición Binaria...</p>';
+    canvasArea.innerHTML = '<div class="loader-spinner"></div><p style="color:white; margin-top:10px;">Cargando Suite de Edici├│n Binaria...</p>';
     
     // --- LIMPIEZA DE MENU (Solicitud Usuario) ---
     const ribbonMenu = document.querySelector('.pro-editor-ribbon-menu');
     if(ribbonMenu) {
-        ribbonMenu.innerHTML = '<div class="ribbon-tab active">HERRAMIENTAS DE EDICIÓN</div>';
+        ribbonMenu.innerHTML = '<div class="ribbon-tab active">HERRAMIENTAS DE EDICI├ôN</div>';
     }
 
     try {
         const url = `/api/formularios/view/${plantilla.id}?token=${localStorage.getItem('token')}`;
         
-        // --- CARGA UNIFICADA (Optimización de Canal) ---
+        // --- CARGA UNIFICADA (Optimizaci├│n de Canal) ---
         const response = await fetch(url);
         if(!response.ok) {
             const errorData = await response.json().catch(() => ({}));
@@ -3887,11 +3887,11 @@ async function startFullProEditor(plantilla) {
         PRO_PDF_DOCUMENT = await loadingTask.promise;
         PRO_CURRENT_PAGE = 1;
 
-        // 2. Manipulación Binaria
+        // 2. Manipulaci├│n Binaria
         const pdfDoc = await PDFLib.PDFDocument.load(pdfData);
         const form = pdfDoc.getForm();
 
-        // --- ADICIÓN EXPERTA: CARGAR PINES (METADATOS) PARA WEB FORM ---
+        // --- ADICI├ôN EXPERTA: CARGAR PINES (METADATOS) PARA WEB FORM ---
         if (plantilla.campos_configurados) {
             try {
                 const pins = typeof plantilla.campos_configurados === 'string' ? JSON.parse(plantilla.campos_configurados) : plantilla.campos_configurados;
@@ -3914,21 +3914,21 @@ async function startFullProEditor(plantilla) {
                        pdfDoc.catalog.lookup(PDFLib.PDFName.of('AcroForm')).has(PDFLib.PDFName.of('XFA'));
 
         if (hasXFA) {
-             showCustomModal('Documento XFA Detectado', 'Este PDF utiliza tecnología XFA. Puede convertirlo a campos modernos.', 'info');
+             showCustomModal('Documento XFA Detectado', 'Este PDF utiliza tecnolog├¡a XFA. Puede convertirlo a campos modernos.', 'info');
         }
         
         renderProPageThumbnails();
         renderFullProCanvas();
     } catch (err) {
         console.error("Full Editor Error:", err);
-        showCustomModal('Diagnóstico Suite Pro', err.message, 'error');
+        showCustomModal('Diagn├│stico Suite Pro', err.message, 'error');
     }
 }
 
-// Módulo CRUD de Formularios (Fase 3)
+// M├│dulo CRUD de Formularios (Fase 3)
 function toggleFormEditorMode() {
     PRO_EDIT_MODE = (PRO_EDIT_MODE === 'form') ? 'view' : 'form';
-    showCustomModal('Modo Formulario', PRO_EDIT_MODE === 'form' ? 'Añadir o editar campos de formulario (AcroForms).' : 'Modo visualización.', 'info');
+    showCustomModal('Modo Formulario', PRO_EDIT_MODE === 'form' ? 'A├▒adir o editar campos de formulario (AcroForms).' : 'Modo visualizaci├│n.', 'info');
     renderFullProCanvas();
 }
 
@@ -3969,7 +3969,7 @@ async function renderFullProCanvas() {
     if(!container) return;
     container.innerHTML = '';
     
-    // 1. Obtención de página y viewport profesional
+    // 1. Obtenci├│n de p├ígina y viewport profesional
     const page = await PRO_PDF_DOCUMENT.getPage(PRO_CURRENT_PAGE);
     const scale = PRO_ZOOM_LEVEL * 1.5;
     const viewport = page.getViewport({ scale });
@@ -3984,14 +3984,14 @@ async function renderFullProCanvas() {
     wrapper.style.margin = '0 auto 40px auto';
     wrapper.style.boxShadow = '0 15px 50px rgba(0,0,0,0.4)';
 
-    // 3. Capa de Visualización Nativa (Nítida e Intacta)
+    // 3. Capa de Visualizaci├│n Nativa (N├¡tida e Intacta)
     const canvas = document.createElement('canvas');
     canvas.width = viewport.width;
     canvas.height = viewport.height;
     await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
     wrapper.appendChild(canvas);
 
-    // 4. CAPA DE INTERACCIÓN INTELIGENTE (Smart Fill Layer)
+    // 4. CAPA DE INTERACCI├ôN INTELIGENTE (Smart Fill Layer)
     let interactionLayer = document.getElementById('pro-interaction-layer');
     if (!interactionLayer) {
         interactionLayer = document.createElement('div');
@@ -4011,7 +4011,7 @@ async function renderFullProCanvas() {
         createDraggableField(fieldData, interactionLayer);
     });
 
-    // EVENTO: Añadir Manual (Posición Real Protegida)
+    // EVENTO: A├▒adir Manual (Posici├│n Real Protegida)
     interactionLayer.onclick = (e) => {
         if (e.target !== interactionLayer) return;
         if (PRO_EDIT_MODE !== 'add-text' && PRO_EDIT_MODE !== 'add-check') return;
@@ -4021,10 +4021,10 @@ async function renderFullProCanvas() {
         const fieldData = {
             id: `field-${Date.now()}`,
             page: PRO_CURRENT_PAGE,
-            // Guardamos la posición REAL de la esquina superior izquierda
+            // Guardamos la posici├│n REAL de la esquina superior izquierda
             x: e.clientX - rect.left,
             y: e.clientY - rect.top - (fSize * 0.5), 
-            text: PRO_EDIT_MODE === 'add-check' ? 'X' : 'Escriba aquí...',
+            text: PRO_EDIT_MODE === 'add-check' ? 'X' : 'Escriba aqu├¡...',
             type: PRO_EDIT_MODE,
             fontSize: fSize
         };
@@ -4059,7 +4059,7 @@ function createDraggableField(data, container) {
     el.style.fontSize = `${data.fontSize}px`;
     el.style.fontWeight = data.type === 'add-check' ? '900' : 'normal';
     el.style.color = '#000';
-    el.style.backgroundColor = 'transparent'; // TRANSPARENCIA PARA VER LÍNEAS DE TABLA
+    el.style.backgroundColor = 'transparent'; // TRANSPARENCIA PARA VER L├ìNEAS DE TABLA
     el.style.border = '1px solid rgba(var(--primary-rgb), 0.3)';
     el.style.minWidth = data.type === 'add-check' ? '24px' : '10px'; 
     el.style.width = 'auto'; 
@@ -4081,7 +4081,7 @@ function createDraggableField(data, container) {
     el.style.zIndex = '1000';
     el.style.userSelect = 'none';
 
-    // --- LÓGICA DE ARRASTRE MASTER ---
+    // --- L├ôGICA DE ARRASTRE MASTER ---
     let isDragging = false;
     let startX, startY;
 
@@ -4121,7 +4121,7 @@ function createDraggableField(data, container) {
     window.addEventListener('mouseup', handleGlobalUp);
 
     el.onfocus = () => {
-        if(el.innerText === 'Escriba aquí...') el.innerText = '';
+        if(el.innerText === 'Escriba aqu├¡...') el.innerText = '';
         el.style.backgroundColor = 'rgba(255,255,255,0.7)'; // Ligero realce al editar
         el.style.outline = '2px solid var(--primary)';
         ACTIVE_PRO_FIELD_ID = data.id;
@@ -4136,7 +4136,7 @@ function createDraggableField(data, container) {
         if(fsSelector) fsSelector.value = data.fontSize || 12;
     };
 
-    // --- ALINEACIÓN POR TECLADO (NUDGE DE PRECISIÓN) ---
+    // --- ALINEACI├ôN POR TECLADO (NUDGE DE PRECISI├ôN) ---
     el.onkeydown = (e) => {
         if (!e.altKey) return; // Solo actuar si se presiona ALT para no interferir con la escritura
         
@@ -4152,7 +4152,7 @@ function createDraggableField(data, container) {
             e.preventDefault();
             el.style.left = `${data.x}px`;
             el.style.top = `${data.y}px`;
-            // Sincronización silenciosa sin re-renderizado pesado para fluidez total
+            // Sincronizaci├│n silenciosa sin re-renderizado pesado para fluidez total
         }
     };
     
@@ -4180,9 +4180,9 @@ function createDraggableField(data, container) {
         }
     };
     container.appendChild(el);
-    if(data.text === 'Escriba aquí...') setTimeout(() => el.focus(), 10);
+    if(data.text === 'Escriba aqu├¡...') setTimeout(() => el.focus(), 10);
     
-    // Si el campo es nuevo y fue añadido manualmente, refrescar el asistente
+    // Si el campo es nuevo y fue a├▒adido manualmente, refrescar el asistente
     if(!data.label) renderProWebFormAssistant(); 
 }
 
@@ -4201,7 +4201,7 @@ function renderProWebFormAssistant() {
         const row = document.createElement('div');
         row.className = `form-field-group ${field.type === 'add-check' ? 'check-row' : ''}`;
         
-        const labelText = field.label || `Campo Libre (Pág ${field.page})`;
+        const labelText = field.label || `Campo Libre (P├íg ${field.page})`;
         
         if(field.type === 'add-check') {
             row.innerHTML = `
@@ -4213,7 +4213,7 @@ function renderProWebFormAssistant() {
             const isDate = labelText.toLowerCase().includes('date') || labelText.toLowerCase().includes('fecha');
             row.innerHTML = `
                 <label>${labelText}</label>
-                <input type="${isDate ? 'date' : 'text'}" data-sync-id="${field.id}" value="${field.text === 'Escriba aquí...' ? '' : field.text}" oninput="syncCanvasFieldFromForm('${field.id}', this.value)">
+                <input type="${isDate ? 'date' : 'text'}" data-sync-id="${field.id}" value="${field.text === 'Escriba aqu├¡...' ? '' : field.text}" oninput="syncCanvasFieldFromForm('${field.id}', this.value)">
             `;
         }
         
@@ -4280,9 +4280,9 @@ function applyProFontSize(size) {
     }
 }
 
-// Para Edición Directa (Legacy/Smart)
+// Para Edici├│n Directa (Legacy/Smart)
 function applyBlockFontSize(size) {
-    // Busca el input activo en el DOM si es edición directa
+    // Busca el input activo en el DOM si es edici├│n directa
     const activeInp = document.activeElement;
     if(activeInp && (activeInp.classList.contains('smart-pdf-input') || activeInp.classList.contains('pdf-new-text'))) {
         activeInp.style.fontSize = `${size}pt`;
@@ -4293,7 +4293,7 @@ function applyBlockFontSize(size) {
 
 function switchRibbonTab(tab) {
     document.querySelectorAll('.ribbon-tab').forEach(t => t.classList.remove('active'));
-    // Lógica visual para cambiar grupos de acciones (opcional por ahora)
+    // L├│gica visual para cambiar grupos de acciones (opcional por ahora)
 }
 
 function addNewProTextBlock() {
@@ -4330,7 +4330,32 @@ function makeElementDraggable(el) {
     document.onmouseup = () => isDragging = false;
 }
 
-
+    if(menuId === 'val-ediciones') {
+        content.innerHTML = `
+            <div class="glass-header-actions" style="margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
+                <div class="search-box-pro">
+                    <i class="ph ph-magnifying-glass"></i>
+                    <input type="text" id="filter-ediciones" placeholder="Buscar por nombre o fecha..." oninput="filterEdicionesTable()">
+                </div>
+                <button class="btn btn-primary" onclick="renderContent('val-edit-pdf', 'Editor Maestro')"><i class="ph ph-plus"></i> Nueva Edici├│n</button>
+            </div>
+            <div class="glass-card" style="padding:24px; overflow-x:auto;">
+                <table style="width:100%; text-align:left; border-collapse:collapse;" id="ediciones-table">
+                    <thead>
+                        <tr style="border-bottom:1px solid var(--border-color); color:var(--text-muted);">
+                            <th style="padding:12px;">Documento Original</th>
+                            <th>Fecha de Edici├│n</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ediciones-table-body">
+                        <tr><td colspan="4" style="padding:40px; text-align:center;">Cargando historial de ediciones...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        `;
+        fetchEdicionesList();
+    }
 
 async function fetchPlantillasParaEditor() {
     try {
@@ -4358,9 +4383,9 @@ async function fetchPlantillasParaEditor() {
             const p = window.GLOBAL_PLANTILLAS.find(x => x.id == id);
             if(!p) return;
 
-            // --- LÓGICA DE UNICIDAD (REQUISITO 3) ---
+            // --- L├ôGICA DE UNICIDAD (REQUISITO 3) ---
             // Buscamos si el usuario ya tiene un borrador para esta misma plantilla
-            // Para esto necesitamos asegurarnos de que GLOBAL_EDICIONES esté cargado.
+            // Para esto necesitamos asegurarnos de que GLOBAL_EDICIONES est├® cargado.
             if(!window.GLOBAL_EDICIONES) {
                 const res = await fetch('/api/ediciones', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
                 window.GLOBAL_EDICIONES = await res.json();
@@ -4370,7 +4395,7 @@ async function fetchPlantillasParaEditor() {
             
             if(existingEdition) {
                 // Si ya existe, avisar y reanudar
-                showCustomModal('Borrador Detectado', `Ya tienes una edición en curso para este documento. Reanudando tus últimos cambios del ${new Date(existingEdition.fecha_creacion).toLocaleDateString()}...`, 'success');
+                showCustomModal('Borrador Detectado', `Ya tienes una edici├│n en curso para este documento. Reanudando tus ├║ltimos cambios del ${new Date(existingEdition.fecha_creacion).toLocaleDateString()}...`, 'success');
                 setTimeout(() => loadEdicionInEditor(existingEdition.id), 1500);
             } else {
                 // Si es nuevo, iniciar desde cero
@@ -4382,7 +4407,7 @@ async function fetchPlantillasParaEditor() {
     }
 }
 
-// --- MOTOR DE PERSISTENCIA Y EXPORTACIÓN (High-Level Doc Management) ---
+// --- MOTOR DE PERSISTENCIA Y EXPORTACI├ôN (High-Level Doc Management) ---
 
 async function saveFullProChanges() {
     if(!window.CURRENT_PLANTILLA_ID) {
@@ -4390,7 +4415,7 @@ async function saveFullProChanges() {
         return;
     }
     
-    // Forzamos guardar lo que el usuario esté tecleando actualmente antes de mandar a BB.DD.
+    // Forzamos guardar lo que el usuario est├® tecleando actualmente antes de mandar a BB.DD.
     if(typeof flushActiveInputs === 'function') flushActiveInputs();
     
     showCustomModal('Guardando...', 'Sincronizando ediciones con el servidor...', 'info');
@@ -4407,7 +4432,7 @@ async function saveFullProChanges() {
         
         let response;
         if (window.CURRENT_EDICION_ID) {
-            // Sobrescribir (PUT) en edición existente (No genera duplicados en la tabla)
+            // Sobrescribir (PUT) en edici├│n existente (No genera duplicados en la tabla)
             response = await fetch(`/api/ediciones/${window.CURRENT_EDICION_ID}`, {
                 method: 'PUT',
                 headers: { 
@@ -4431,7 +4456,7 @@ async function saveFullProChanges() {
         if(response.ok) {
             const dataRes = await response.json();
             if(!window.CURRENT_EDICION_ID) window.CURRENT_EDICION_ID = dataRes.id; 
-            showCustomModal('Éxito', 'Cambios guardados en tu historial personal.', 'success');
+            showCustomModal('├ëxito', 'Cambios guardados en tu historial personal.', 'success');
         } else {
             const errorData = await response.json();
             const fullMsg = errorData.detalle ? `Error: ${errorData.detalle}` : 'Falla en el servidor al persistir datos.';
@@ -4454,7 +4479,7 @@ async function fetchEdicionesList() {
         tbody.innerHTML = '';
         
         if (ediciones.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:40px;">No existe información.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:40px;">No existe informaci├│n.</td></tr>';
             return;
         }
 
@@ -4493,7 +4518,7 @@ function filterEdicionesTable() {
 async function toggleFirmaEstado(id, current) {
     if (current === 'FIRMADO') {
         // Permitir revertir a PENDIENTE (opcional, segun reglas de negocio)
-        if (!confirm('¿Desea revertir el estado a PENDIENTE? Se perderá la certificación actual.')) return;
+        if (!confirm('┬┐Desea revertir el estado a PENDIENTE? Se perder├í la certificaci├│n actual.')) return;
         
         try {
             await fetch(`/api/ediciones/${id}/firma`, {
@@ -4523,7 +4548,7 @@ async function toggleFirmaEstado(id, current) {
             <button class="btn-primary" onclick="certificarEdicionDesdeUI(${id})" style="width:100%;">VALIDAR Y CERTIFICAR</button>
         </div>
     `;
-    showCustomModal('Certificación de Firma', html, 'info');
+    showCustomModal('Certificaci├│n de Firma', html, 'info');
 }
 
 async function certificarEdicionDesdeUI(id) {
@@ -4533,7 +4558,7 @@ async function certificarEdicionDesdeUI(id) {
     const formData = new FormData();
     formData.append('archivo', fileInput.files[0]);
 
-    showCustomModal('Agente Validando...', 'El Agente Experto está inspeccionando la estructura del PDF...', 'info');
+    showCustomModal('Agente Validando...', 'El Agente Experto est├í inspeccionando la estructura del PDF...', 'info');
 
     try {
         const response = await fetch(`/api/ediciones/${id}/certificar`, {
@@ -4544,14 +4569,14 @@ async function certificarEdicionDesdeUI(id) {
 
         const res = await response.json();
         if (response.ok) {
-            showCustomModal('Certificación Exitosa', res.message, 'success');
+            showCustomModal('Certificaci├│n Exitosa', res.message, 'success');
             fetchEdicionesList();
         } else {
-            showCustomModal('Fallo de Validación', res.error, 'error');
+            showCustomModal('Fallo de Validaci├│n', res.error, 'error');
         }
     } catch (err) {
         console.error(err);
-        showCustomModal('Error', 'Falla de conexión con el Agente.', 'error');
+        showCustomModal('Error', 'Falla de conexi├│n con el Agente.', 'error');
     }
 }
 
@@ -4564,7 +4589,7 @@ async function downloadEdicionPDF(id) {
         return;
     }
     
-    showCustomModal('Exportación Quirúrgica', 'Fusionando capas binarias y generando documento final...', 'info');
+    showCustomModal('Exportaci├│n Quir├║rgica', 'Fusionando capas binarias y generando documento final...', 'info');
     
     try {
         const token = localStorage.getItem('token');
@@ -4581,7 +4606,7 @@ async function downloadEdicionPDF(id) {
         const rawData = JSON.parse(ed.datos_json);
         const edits = rawData.fields || rawData;
 
-        // 2. Motor de Fusión Canvas (Zero-Abstraction)
+        // 2. Motor de Fusi├│n Canvas (Zero-Abstraction)
         const finalImages = [];
         
         for (let i = 1; i <= totalPages; i++) {
@@ -4605,7 +4630,7 @@ async function downloadEdicionPDF(id) {
              const normFactor = scale / (saveZoom * 1.5);
 
              pageEdits.forEach(edit => {
-                 const text = edit.text === 'Escriba aquí...' ? '' : edit.text;
+                 const text = edit.text === 'Escriba aqu├¡...' ? '' : edit.text;
                  if(!text) return;
 
                  const isCheck = edit.type === 'add-check';
@@ -4615,24 +4640,24 @@ async function downloadEdicionPDF(id) {
                  ctx.fillStyle = '#000';
                  
                  if (isCheck) {
-                     // LÓGICA PARA MARCAS (CENTRADAS EN EL CUADRO)
+                     // L├ôGICA PARA MARCAS (CENTRADAS EN EL CUADRO)
                      ctx.textAlign = 'center';
                      ctx.textBaseline = 'middle';
                      const posX = (edit.x * normFactor) + (12 * normFactor);
                      const posY = (edit.y * normFactor) + (9 * normFactor); 
                      ctx.fillText(text.toUpperCase(), posX, posY);
                  } else {
-                     // LÓGICA PARA TEXTO (ALINEADO A LA IZQUIERDA)
+                     // L├ôGICA PARA TEXTO (ALINEADO A LA IZQUIERDA)
                      ctx.textAlign = 'left';
                      ctx.textBaseline = 'top';
                      
-                     // Ajuste vertical sutil para alinear con la línea base del PDF (+1 o 2px)
+                     // Ajuste vertical sutil para alinear con la l├¡nea base del PDF (+1 o 2px)
                      const posY = (edit.y * normFactor) + (1 * normFactor);
 
-                     // --- MÁSCARA DE BLANQUEO QUIRÚRGICA (PROTECCIÓN DE TABLAS) ---
+                     // --- M├üSCARA DE BLANQUEO QUIR├ÜRGICA (PROTECCI├ôN DE TABLAS) ---
                      ctx.fillStyle = 'white';
                      const textWidth = ctx.measureText(text).width;
-                     // MÁSCARA QUIRÚRGICA: Margen mínimo (10px) para proteger separadores / / íntimos
+                     // M├üSCARA QUIR├ÜRGICA: Margen m├¡nimo (10px) para proteger separadores / / ├¡ntimos
                      const clearAreaWidth = textWidth + (10 * normFactor);
                      const clearHeight = fontSize * 1.4; 
                      const maskX = edit.x * normFactor - (4 * normFactor);
@@ -4652,9 +4677,9 @@ async function downloadEdicionPDF(id) {
              });
         }
 
-        // 3. Empaquetado Master UHD (Detección robusta de librería)
+        // 3. Empaquetado Master UHD (Detecci├│n robusta de librer├¡a)
         const LibPDF = (window.jspdf && window.jspdf.jsPDF) ? window.jspdf.jsPDF : (window.jsPDF ? window.jsPDF : null);
-        if (!LibPDF) throw new Error("La librería de generación PDF (jsPDF) no se cargó correctamente. Por favor refresque (F5/Ctrl+R).");
+        if (!LibPDF) throw new Error("La librer├¡a de generaci├│n PDF (jsPDF) no se carg├│ correctamente. Por favor refresque (F5/Ctrl+R).");
 
         const pdf = new LibPDF({
             orientation: finalImages[0].width > finalImages[0].height ? 'landscape' : 'portrait',
@@ -4671,16 +4696,16 @@ async function downloadEdicionPDF(id) {
         });
 
         pdf.save(`PRINT_QUALITY_${ed.nombre_archivo_original || 'documento'}.pdf`);
-        showCustomModal('Éxito', 'Documento en Calidad de Imprenta generado.', 'success');
+        showCustomModal('├ëxito', 'Documento en Calidad de Imprenta generado.', 'success');
 
     } catch (err) {
         console.error("ERROR EXPORT UHD MASTER:", err);
-        showCustomModal('Atención', 'Error en el motor UHD: ' + err.message, 'error');
+        showCustomModal('Atenci├│n', 'Error en el motor UHD: ' + err.message, 'error');
     }
 }
 
 async function deleteEdicion(id) {
-    if(!confirm("¿Eliminar esta edición definitivamente?")) return;
+    if(!confirm("┬┐Eliminar esta edici├│n definitivamente?")) return;
     try {
         await fetch(`/api/ediciones/${id}`, { 
             method: 'DELETE',
@@ -4696,20 +4721,20 @@ async function loadEdicionInEditor(id) {
     const ed = window.GLOBAL_EDICIONES.find(x => x.id === id);
     if(!ed) return;
     
-    // 1. FORZAMOS EL CAMBIO DE VISTA (Redirección Inteligente)
+    // 1. FORZAMOS EL CAMBIO DE VISTA (Redirecci├│n Inteligente)
     renderContent('val-edit-pdf', 'Editar Formularios');
     
-    // Ocultar selector de plantillas porque es una edición existente
+    // Ocultar selector de plantillas porque es una edici├│n existente
     const plSelect = document.getElementById('edit-pl-select');
     if (plSelect) plSelect.style.display = 'none';
     
     const p = { id: ed.plantilla_id, tipo: ed.nombre_archivo_original };
     await startFullProEditor(p);
     
-    // Anclar la sesión a la edición actual para permitir Guardado en Caliente (PUT)
+    // Anclar la sesi├│n a la edici├│n actual para permitir Guardado en Caliente (PUT)
     window.CURRENT_EDICION_ID = ed.id;
     
-    // 2. PARSE DINÁMICO (Soporte Meta & Legacy)
+    // 2. PARSE DIN├üMICO (Soporte Meta & Legacy)
     const rawData = JSON.parse(ed.datos_json);
     if(rawData.fields) {
         window.PRO_DRAFT_FIELDS = rawData.fields;
@@ -4727,7 +4752,7 @@ async function loadEdicionInEditor(id) {
 // --- MOTOR DE REVERSIBILIDAD (Undo/Redo Pro - Estilo PDFgear) ---
 function undoEdit() {
     if (!window.PRO_DRAFT_FIELDS || window.PRO_DRAFT_FIELDS.length === 0) return;
-    // Guardamos el input dinámico actual si existe
+    // Guardamos el input din├ímico actual si existe
     flushActiveInputs();
     
     const lastOp = window.PRO_DRAFT_FIELDS.pop();
@@ -4757,7 +4782,7 @@ function flushActiveInputs() {
 }
 
 // ==========================================================================
-// MÓDULO: FORMULARIOS FIRMADOS (CON AGENTE DE VALIDACIÓN)
+// M├ôDULO: FORMULARIOS FIRMADOS (CON AGENTE DE VALIDACI├ôN)
 // ==========================================================================
 
 function renderSignedFormsView(container) {
@@ -4767,7 +4792,7 @@ function renderSignedFormsView(container) {
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
                  <div>
                     <h3 style="color:var(--primary);"><i class="ph ph-signature"></i> Formularios Firmados</h3>
-                    <p style="font-size:0.9rem; color:var(--text-muted);">Gestión y validación criptográfica de documentos externos.</p>
+                    <p style="font-size:0.9rem; color:var(--text-muted);">Gesti├│n y validaci├│n criptogr├ífica de documentos externos.</p>
                  </div>
                  <button class="btn-primary" onclick="showUploadSignedModal()"><i class="ph ph-upload-simple"></i> Subir Formulario Firmado</button>
             </div>
@@ -4805,14 +4830,14 @@ async function fetchSignedForms() {
         
         if (!response.ok) {
             const errData = await response.json();
-            throw new Error(errData.detalle || errData.error || 'Falla de comunicación');
+            throw new Error(errData.detalle || errData.error || 'Falla de comunicaci├│n');
         }
 
         const data = await response.json();
         tbody.innerHTML = '';
 
         if (!Array.isArray(data) || data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:40px; color:var(--text-muted);">No existe información el repositorio.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:40px; color:var(--text-muted);">No existe informaci├│n el repositorio.</td></tr>';
             return;
         }
 
@@ -4823,7 +4848,7 @@ async function fetchSignedForms() {
             const tr = document.createElement('tr');
             tr.style.borderBottom = '1px solid var(--border-color)';
             const badgeClass = item.is_valid ? 'badge-success' : 'badge-danger';
-            const badgeText = item.is_valid ? 'FIRMA VÁLIDA' : 'SIN FIRMA';
+            const badgeText = item.is_valid ? 'FIRMA V├üLIDA' : 'SIN FIRMA';
             
             tr.innerHTML = `
                 <td style="padding:12px;"><strong>${item.nombre_archivo || 'Documento'}</strong></td>
@@ -4839,18 +4864,18 @@ async function fetchSignedForms() {
         });
     } catch (err) {
         console.error("[ERROR_FETCH_SIGNED]", err);
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color:#ef4444;">Error técnico: ${err.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color:#ef4444;">Error t├®cnico: ${err.message}</td></tr>`;
     }
 }
 
 function showUploadSignedModal() {
     const html = `
         <div style="display:flex; flex-direction:column; gap:20px;">
-            <p style="color:var(--text-muted); font-size:0.9rem;">Suba el archivo PDF con su firma digital. Nuestro Agente Experto validará la integridad de la firma automáticamente.</p>
+            <p style="color:var(--text-muted); font-size:0.9rem;">Suba el archivo PDF con su firma digital. Nuestro Agente Experto validar├í la integridad de la firma autom├íticamente.</p>
             <div class="form-group">
                 <input type="file" id="signed-file-input" accept=".pdf" style="width:100%; padding:20px; border:2px dashed var(--border-color); border-radius:8px; background:rgba(255,255,255,0.05); color:white;">
             </div>
-            <button class="btn-primary" onclick="uploadSignedFile()" style="width:100%;">Iniciar Validación y Carga</button>
+            <button class="btn-primary" onclick="uploadSignedFile()" style="width:100%;">Iniciar Validaci├│n y Carga</button>
         </div>
     `;
     showCustomModal('Subir Formulario Firmado', html, 'info');
@@ -4863,7 +4888,7 @@ async function uploadSignedFile() {
     const formData = new FormData();
     formData.append('archivo', fileInput.files[0]);
 
-    showCustomModal('Procesando...', 'El Agente Experto está validando la firma digital criptográfica...', 'info');
+    showCustomModal('Procesando...', 'El Agente Experto est├í validando la firma digital criptogr├ífica...', 'info');
 
     try {
         const response = await fetch('/api/formularios-firmados/upload', {
@@ -4873,18 +4898,18 @@ async function uploadSignedFile() {
         });
         const res = await response.json();
         if(res.isValid) {
-            showCustomModal('Éxito', 'Documento validado y guardado correctamente.', 'success');
+            showCustomModal('├ëxito', 'Documento validado y guardado correctamente.', 'success');
         } else {
-            showCustomModal('Advertencia', 'Documento guardado, pero NO se detectó una firma digital válida.', 'warning');
+            showCustomModal('Advertencia', 'Documento guardado, pero NO se detect├│ una firma digital v├ílida.', 'warning');
         }
         fetchSignedForms();
     } catch (err) {
-        showCustomModal('Error', 'Falla en el proceso de carga y validación.', 'error');
+        showCustomModal('Error', 'Falla en el proceso de carga y validaci├│n.', 'error');
     }
 }
 
 async function deleteSignedForm(id) {
-    if(!confirm('¿Está seguro de eliminar este formulario firmado?')) return;
+    if(!confirm('┬┐Est├í seguro de eliminar este formulario firmado?')) return;
     try {
         await fetch(`/api/formularios-firmados/${id}`, {
             method: 'DELETE',
@@ -4902,7 +4927,7 @@ async function downloadSignedForm(id, nombre) {
         const response = await fetch(`/api/formularios-firmados/view/${id}`, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
-        if (!response.ok) throw new Error('No se pudo obtener el archivo. Verifique su conexión.');
+        if (!response.ok) throw new Error('No se pudo obtener el archivo. Verifique su conexi├│n.');
 
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
@@ -4920,7 +4945,7 @@ async function downloadSignedForm(id, nombre) {
 }
 
 // ==========================================================================
-// MÓDULO: DOCUMENTOS PERSONALES
+// M├ôDULO: DOCUMENTOS PERSONALES
 // ==========================================================================
 
 function renderPersonalDocsView(container) {
@@ -4929,7 +4954,7 @@ function renderPersonalDocsView(container) {
         <div class="glass-card" style="padding:40px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
                  <div>
-                    <h3 style="color:var(--primary);"><i class="ph ph-identification-card"></i> Documentación Personal</h3>
+                    <h3 style="color:var(--primary);"><i class="ph ph-identification-card"></i> Documentaci├│n Personal</h3>
                     <p style="font-size:0.9rem; color:var(--text-muted);">Repositorio centralizado de identidad y respaldos legales.</p>
                  </div>
                  <button class="btn-primary" onclick="showUploadPersonalModal()"><i class="ph ph-upload-simple"></i> Subir Documento</button>
@@ -4939,11 +4964,11 @@ function renderPersonalDocsView(container) {
                 <table style="width:100%; border-collapse:collapse;">
                     <thead>
                         <tr style="text-align:left; border-bottom:2px solid var(--border-color);">
-                            <th style="padding:12px;">Categoría</th>
+                            <th style="padding:12px;">Categor├¡a</th>
                             ${(getSafeUser() || {}).rol === 'MASTER' ? '<th style="padding:12px;">Usuario</th>' : ''}
                             <th style="padding:12px;">Archivo</th>
                             <th style="padding:12px;">Fecha Carga</th>
-                            <th style="padding:12px;">Expiración</th>
+                            <th style="padding:12px;">Expiraci├│n</th>
                             <th style="padding:12px; text-align:right;">Acciones</th>
                         </tr>
                     </thead>
@@ -4960,7 +4985,7 @@ async function fetchPersonalDocs() {
     const tbody = document.getElementById('personal-docs-table-body');
     if(!tbody) return;
 
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px;">Accediendo a documentación segura...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px;">Accediendo a documentaci├│n segura...</td></tr>';
 
     try {
         const response = await fetch('/api/documentacion-personal', {
@@ -4969,14 +4994,14 @@ async function fetchPersonalDocs() {
         
         if (!response.ok) {
             const errData = await response.json();
-            throw new Error(errData.detalle || errData.error || 'Falla de comunicación');
+            throw new Error(errData.detalle || errData.error || 'Falla de comunicaci├│n');
         }
 
         const data = await response.json();
         tbody.innerHTML = '';
 
         if (!Array.isArray(data) || data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:40px; color:var(--text-muted);">No existe documentación cargada.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:40px; color:var(--text-muted);">No existe documentaci├│n cargada.</td></tr>';
             return;
         }
 
@@ -4989,7 +5014,7 @@ async function fetchPersonalDocs() {
             
             const expirationDisplay = doc.fecha_expiracion 
                 ? `<span style="color:#10b981; font-weight:700;">${new Date(doc.fecha_expiracion).toLocaleDateString()}</span>` 
-                : `<span style="color:var(--text-muted); font-style:italic;">No definida</span> <button class="action-btn" onclick="toggleEditDate(${doc.id})" title="Añadir Fecha"><i class="ph ph-calendar-plus" style="color:var(--primary);"></i></button>`;
+                : `<span style="color:var(--text-muted); font-style:italic;">No definida</span> <button class="action-btn" onclick="toggleEditDate(${doc.id})" title="A├▒adir Fecha"><i class="ph ph-calendar-plus" style="color:var(--primary);"></i></button>`;
 
             tr.innerHTML = `
                 <td style="padding:12px;"><span class="badge-blue" style="padding:4px 8px; border-radius:4px; font-size:10px; font-weight:800; background:rgba(59,130,246,0.1); color:#60a5fa;">${doc.tipo}</span></td>
@@ -5009,11 +5034,11 @@ async function fetchPersonalDocs() {
         });
     } catch (err) {
         console.error("[ERROR_FETCH_PERSONAL]", err);
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:#ef4444;">Error técnico: ${err.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:#ef4444;">Error t├®cnico: ${err.message}</td></tr>`;
     }
 }
 
-// FUNCIÓN DE ACTUALIZACIÓN MANUAL V19
+// FUNCI├ôN DE ACTUALIZACI├ôN MANUAL V19
 async function updateManualExpiration(docId, dateValue) {
     if (!dateValue) return;
     try {
@@ -5048,9 +5073,9 @@ function showUploadPersonalModal() {
     const html = `
         <div style="display:flex; flex-direction:column; gap:20px;">
             <div class="form-group">
-                <label style="color:white; display:block; margin-bottom:10px;">Categoría de Documento</label>
+                <label style="color:white; display:block; margin-bottom:10px;">Categor├¡a de Documento</label>
                 <select id="doc-personal-type" style="width:100%; padding:10px; background:#0f172a; color:white; border:1px solid var(--border-color); border-radius:6px;">
-                    <option value="IDENTIDAD">Cédula / ID</option>
+                    <option value="IDENTIDAD">C├®dula / ID</option>
                     <option value="PASAPORTE">Pasaporte</option>
                     <option value="LEGAL">Respaldo Legal</option>
                     <option value="EMPRESA">Respaldo de Empresa</option>
@@ -5064,7 +5089,7 @@ function showUploadPersonalModal() {
             <button class="btn-primary" onclick="uploadPersonalFile()" style="width:100%"><i class="ph ph-upload"></i> Guardar Documento</button>
         </div>
     `;
-    showCustomModal('Cargar Documentación Personal', html, 'info');
+    showCustomModal('Cargar Documentaci├│n Personal', html, 'info');
 }
 
 async function uploadPersonalFile() {
@@ -5083,7 +5108,7 @@ async function uploadPersonalFile() {
             body: formData
         });
         
-        showCustomModal('Éxito', 'Documentación cargada correctamente.', 'success');
+        showCustomModal('├ëxito', 'Documentaci├│n cargada correctamente.', 'success');
         fetchPersonalDocs();
     } catch (err) {
         showCustomModal('Error', 'No se pudo procesar el documento.', 'error');
@@ -5091,7 +5116,7 @@ async function uploadPersonalFile() {
 }
 
 async function deletePersonalDoc(id) {
-    if(!confirm('¿Eliminar este documento permanentemente?')) return;
+    if(!confirm('┬┐Eliminar este documento permanentemente?')) return;
     try {
         await fetch(`/api/documentacion-personal/${id}`, {
             method: 'DELETE',
@@ -5106,7 +5131,7 @@ async function deletePersonalDoc(id) {
 function showEditPersonalModal(id, currentType) {
     const html = `
         <div style="display:flex; flex-direction:column; gap:20px;">
-            <p style="color:var(--text-muted); font-size:0.9rem;">Sustituya el archivo actual para esta categoría.</p>
+            <p style="color:var(--text-muted); font-size:0.9rem;">Sustituya el archivo actual para esta categor├¡a.</p>
             <div class="form-group">
                 <label style="color:white; display:block; margin-bottom:10px;">Tipo</label>
                 <input type="text" value="${currentType}" disabled style="width:100%; padding:10px; background:rgba(255,255,255,0.05); color:white; border:none; border-radius:6px;">
@@ -5132,15 +5157,15 @@ async function reemplazarDocumento(id, type) {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
             body: formData
         });
-        showCustomModal('Sistema Actualizado', 'El archivo ha sido reemplazado con éxito.', 'success');
+        showCustomModal('Sistema Actualizado', 'El archivo ha sido reemplazado con ├®xito.', 'success');
         fetchPersonalDocs();
     } catch (err) {
-        showCustomModal('Error', 'Falla en la sustitución', 'error');
+        showCustomModal('Error', 'Falla en la sustituci├│n', 'error');
     }
 }
 
 async function downloadPersonalDoc(id, nombre) {
-    showCustomModal('Descargando...', 'Accediendo al repositorio seguro de documentación...', 'info');
+    showCustomModal('Descargando...', 'Accediendo al repositorio seguro de documentaci├│n...', 'info');
     try {
         const response = await fetch(`/api/documentacion-personal/view/${id}`, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
@@ -5195,7 +5220,7 @@ function renderNotifications(data) {
     }
 
     if (data.length === 0) {
-        list.innerHTML = '<p class="empty-notif" style="line-height:1.5;">No hay alertas pendientes.<br><br><span style="font-size:0.75rem; opacity:0.7;">Aquí se registrarán actividades como de creación de documentos o cambios de estado administrativos.</span></p>';
+        list.innerHTML = '<p class="empty-notif" style="line-height:1.5;">No hay alertas pendientes.<br><br><span style="font-size:0.75rem; opacity:0.7;">Aqu├¡ se registrar├ín actividades como de creaci├│n de documentos o cambios de estado administrativos.</span></p>';
         return;
     }
 
