@@ -4595,10 +4595,9 @@ async function downloadEdicionPDF(id) {
                      // LÓGICA PARA MARCAS (CENTRADAS EN EL CUADRO)
                      ctx.textAlign = 'center';
                      ctx.textBaseline = 'middle';
-                     const boxSizeOffset = 10 * normFactor; // Mitad del div de 20px
-                     const posX = (edit.x * normFactor) + boxSizeOffset;
-                     const posY = (edit.y * normFactor) + boxSizeOffset + (2 * normFactor); 
-                     ctx.fillText(text, posX, posY);
+                     const posX = (edit.x * normFactor) + (12 * normFactor);
+                     const posY = (edit.y * normFactor) + (9 * normFactor); 
+                     ctx.fillText(text.toUpperCase(), posX, posY);
                  } else {
                      // LÓGICA PARA TEXTO (ALINEADO A LA IZQUIERDA)
                      ctx.textAlign = 'left';
