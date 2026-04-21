@@ -4813,6 +4813,8 @@ async function fetchSignedForms() {
             return;
         }
 
+        const userRole = (JSON.parse(localStorage.getItem('user')) || {}).rol || 'GUEST';
+
         data.forEach(item => {
             const tr = document.createElement('tr');
             tr.style.borderBottom = '1px solid var(--border-color)';
@@ -4821,7 +4823,7 @@ async function fetchSignedForms() {
             
             tr.innerHTML = `
                 <td style="padding:12px;"><strong>${item.nombre_archivo}</strong></td>
-                ${JSON.parse(localStorage.getItem('user')).rol === 'MASTER' ? `<td style="padding:12px; font-size:0.8rem; color:var(--primary);">${item.subido_por || 'N/A'}</td>` : ''}
+                ${userRole === 'MASTER' ? `<td style="padding:12px; font-size:0.8rem; color:var(--primary);">${item.subido_por || 'N/A'}</td>` : ''}
                 <td style="padding:12px;"><span class="${badgeClass}" style="padding:4px 8px; border-radius:4px; font-size:10px; font-weight:800;">${badgeText}</span></td>
                 <td style="padding:12px; color:var(--text-muted); font-size:11px;">${new Date(item.fecha_carga).toLocaleString()}</td>
                 <td style="padding:12px; text-align:right;">
@@ -4966,6 +4968,8 @@ async function fetchPersonalDocs() {
             return;
         }
 
+        const userRole = (JSON.parse(localStorage.getItem('user')) || {}).rol || 'GUEST';
+
         data.forEach(doc => {
             const tr = document.createElement('tr');
             tr.style.borderBottom = '1px solid var(--border-color)';
@@ -5003,7 +5007,7 @@ async function fetchPersonalDocs() {
 
             tr.innerHTML = `
                 <td style="padding:12px;"><span style="color:var(--primary); font-weight:700; font-size:11px; text-transform:uppercase;">${doc.tipo}</span></td>
-                ${JSON.parse(localStorage.getItem('user')).rol === 'MASTER' ? `<td style="padding:12px; font-size:0.8rem; color:var(--primary);">${doc.subido_por || doc.perteneciente_a || 'N/A'}</td>` : ''}
+                ${userRole === 'MASTER' ? `<td style="padding:12px; font-size:0.8rem; color:var(--primary);">${doc.subido_por || doc.perteneciente_a || 'N/A'}</td>` : ''}
                 <td style="padding:12px;"><strong>${doc.nombre_archivo}</strong></td>
                 <td style="padding:12px; color:var(--text-muted); font-size:11px;">${fechaCarga}</td>
                 <td style="padding:12px; min-width:140px;">
