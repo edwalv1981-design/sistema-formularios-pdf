@@ -391,24 +391,29 @@ function initDashboard(user) {
     renderContent('val-welcome', 'Panel de Bienvenida');
 }
 
-function getMenuByRole(rol) {
+function getMenuByRole(rolInput) {
     const menus = [];
-    if(rol === 'MASTER') {
+    // Convertir a String y mayúsculas para máxima compatibilidad
+    const rol = String(rolInput).toUpperCase();
+    
+    console.log("Resolviendo menú para rol:", rol); // Diagnóstico
+
+    if(rol === 'MASTER' || rol === '1') {
         menus.push({ id:'val-themes', label: 'Estilo de Interfaz', icon: 'ph ph-paint-brush' });
-        menus.push({ id:'val-users', label: translations[currentLang].usuarios, icon:'ph ph-users' });
-        menus.push({ id:'val-forms', label: translations[currentLang].plantillas, icon:'ph ph-file-pdf' });
+        menus.push({ id:'val-users', label: translations[currentLang].usuarios || 'Usuarios', icon:'ph ph-users' });
+        menus.push({ id:'val-forms', label: translations[currentLang].plantillas || 'Plantillas', icon:'ph ph-file-pdf' });
         menus.push({ id:'val-ediciones', label: 'Editar Formularios', icon: 'ph ph-note-pencil' });
         menus.push({ id:'val-signed-forms', label: 'Formularios Firmados', icon: 'ph ph-signature' });
         menus.push({ id:'val-personal-docs', label: 'Documentos Personales', icon: 'ph ph-identification-card' });
-        menus.push({ id:'val-bitacora', label: translations[currentLang].bitacora, icon:'ph ph-list-bullets' });
+        menus.push({ id:'val-bitacora', label: translations[currentLang].bitacora || 'Bitácora', icon:'ph ph-list-bullets' });
         menus.push({ id:'val-perfil', label: 'Mi Perfil', icon:'ph ph-user-circle', submenus: [
             { id: 'val-perfil-data', label: 'Información de Usuario', icon: 'ph ph-identification-card' },
             { id: 'val-perfil-security', label: 'Cambio de Contraseña', icon: 'ph ph-shield-check' }
         ]});
-    } else if (rol === 'EMPRESA') {
+    } else if (rol === 'EMPRESA' || rol === '2') {
         menus.push({ id:'val-themes', label: 'Estilo de Interfaz', icon: 'ph ph-paint-brush' });
-        menus.push({ id:'val-adds', label: translations[currentLang].usuarios, icon:'ph ph-user-plus' });
-        menus.push({ id:'val-perms', label: translations[currentLang].acciones, icon:'ph ph-shield-check' });
+        menus.push({ id:'val-adds', label: translations[currentLang].usuarios || 'Usuarios', icon:'ph ph-user-plus' });
+        menus.push({ id:'val-perms', label: translations[currentLang].acciones || 'Acciones', icon:'ph ph-shield-check' });
         menus.push({ id:'val-signed-forms', label: 'Formularios Firmados', icon: 'ph ph-signature' });
         menus.push({ id:'val-personal-docs', label: 'Documentos Personales', icon: 'ph ph-identification-card' });
 
@@ -416,11 +421,11 @@ function getMenuByRole(rol) {
             { id: 'val-perfil-data', label: 'Información de Usuario', icon: 'ph ph-identification-card' },
             { id: 'val-perfil-security', label: 'Cambio de Contraseña', icon: 'ph ph-shield-check' }
         ]});
-    } else if (rol === 'ADICIONAL') {
+    } else if (rol === 'ADICIONAL' || rol === '3') {
         menus.push({ id:'val-themes', label: 'Estilo de Interfaz', icon: 'ph ph-paint-brush' });
         menus.push({ id:'val-signed-forms', label: 'Formularios Firmados', icon: 'ph ph-signature' });
         menus.push({ id:'val-personal-docs', label: 'Documentos Personales', icon: 'ph ph-identification-card' });
-        menus.push({ id:'val-bitacora', label: translations[currentLang].bitacora, icon:'ph ph-list-magnifying-glass' });
+        menus.push({ id:'val-bitacora', label: translations[currentLang].bitacora || 'Bitácora', icon:'ph ph-list-magnifying-glass' });
         menus.push({ id:'val-perfil', label: 'Mi Perfil', icon:'ph ph-user-circle', submenus: [
             { id: 'val-perfil-data', label: 'Información de Usuario', icon: 'ph ph-identification-card' },
             { id: 'val-perfil-security', label: 'Cambio de Contraseña', icon: 'ph ph-shield-check' }
