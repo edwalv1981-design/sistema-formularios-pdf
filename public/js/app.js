@@ -1330,7 +1330,7 @@ async function fetchPlantillas() {
                 <td style="color:var(--text-muted); font-size:0.85rem;">${p.nombre_archivo || 'N/A'}</td>
                 <td>
                     <button onclick="editPlantilla(${p.id}, '${p.tipo}', '${p.prefijo}')" class="btn-ghost" style="padding:4px 8px; color:var(--secondary); margin-right:4px;" title="Editar"><i class="ph ph-pencil"></i></button>
-                    ${p.ruta_archivo ? `<a href="${p.ruta_archivo}" download class="btn-ghost" style="padding:4px 8px; color:#2563eb; margin-right:4px;" title="Descargar PDF Original"><i class="ph ph-download-simple"></i></a>` : ''}
+                    <button onclick="descargarPlantillaOriginal(${p.id}, '${(p.nombre_archivo || 'plantilla.pdf').replace(/'/g, "\\'")}')" class="btn-ghost" style="padding:4px 8px; color:#2563eb; margin-right:4px;" title="Descargar PDF Original"><i class="ph ph-download-simple"></i></button>
                     <button onclick="deletePlantilla(${p.id})" class="btn-ghost" style="padding:4px 8px; color:#ef4444;" title="Eliminar"><i class="ph ph-trash"></i></button>
                 </td>
                 <td style="color:var(--text-muted); font-size:0.85rem;">${new Date(p.fecha_carga).toLocaleString()}</td>
@@ -1339,6 +1339,33 @@ async function fetchPlantillas() {
         document.getElementById('forms-table-body').innerHTML = html || '<tr><td colspan="5" style="text-align:center; padding:12px;">No hay plantillas disponibles</td></tr>';
     } catch(err) {
         console.error(err);
+    }
+}
+
+async function descargarPlantillaOriginal(id, nombre) {
+    showCustomModal('Descargando...', 'El Agente está localizando y asegurando el binario original...', 'info');
+    try {
+        const response = await fetch(`${API_URL}/formularios/view/${id}`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.detalle || errData.error || 'No se pudo recuperar el archivo del servidor.');
+        }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = nombre;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        closeCustomModal();
+    } catch (err) {
+        showCustomModal('Error de Descarga', err.message, 'error');
     }
 }
 
