@@ -4783,7 +4783,7 @@ async function fetchSignedForms() {
             tbody.appendChild(tr);
         });
     } catch (err) {
-        showCustomModal('Error', 'Falla al listar formularios firmados', 'error');
+        showCustomModal('Error', 'Falla al listar formularios firmados. Detalle: ' + err.message, 'error');
     }
 }
 
@@ -4939,7 +4939,7 @@ async function fetchPersonalDocs() {
             tbody.appendChild(tr);
         });
     } catch (err) {
-        showCustomModal('Error', 'Falla al listar documentos personales', 'error');
+        showCustomModal('Error', 'Falla al listar documentos personales. Detalle: ' + err.message, 'error');
     }
 }
 
