@@ -1,0 +1,1 @@
+require('./db/index.js').query("SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'formularios_llenos'").then(r => {console.log(r.rows); process.exit(0)}).catch(console.error);
