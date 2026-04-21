@@ -4393,13 +4393,15 @@ async function saveFullProChanges() {
         
         if(response.ok) {
             const dataRes = await response.json();
-            if(!window.CURRENT_EDICION_ID) window.CURRENT_EDICION_ID = dataRes.id; // Anclar al nuevo ID para ediciones subsecuentes (PUT)
+            if(!window.CURRENT_EDICION_ID) window.CURRENT_EDICION_ID = dataRes.id; 
             showCustomModal('Éxito', 'Cambios guardados en tu historial personal.', 'success');
         } else {
-            throw new Error('Falla en servidor');
+            const errorData = await response.json();
+            const fullMsg = errorData.detalle ? `Error: ${errorData.detalle}` : 'Falla en el servidor al persistir datos.';
+            showCustomModal('Error', fullMsg, 'error');
         }
     } catch (err) {
-        showCustomModal('Error', 'No se pudo guardar la edición.', 'error');
+        showCustomModal('Error', `No se pudo conectar con el servidor: ${err.message}`, 'error');
     }
 }
 
