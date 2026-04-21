@@ -3803,11 +3803,14 @@ async function startFullProEditor(plantilla) {
     }
 
     try {
-        const url = `/api/formularios/view/${plantilla.id}?token=${localStorage.getItem('token')}`;
+        const url = `${API_URL}/formularios/view/${plantilla.id}?token=${localStorage.getItem('token')}`;
         
         // --- CARGA UNIFICADA (Optimización de Canal) ---
         const response = await fetch(url);
-        if(!response.ok) throw new Error(`HTTP Error ${response.status}`);
+        if(!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.detalle || `HTTP Error ${response.status}`);
+        }
         const pdfBlob = await response.blob();
         const pdfData = await pdfBlob.arrayBuffer();
         const objectUrl = URL.createObjectURL(pdfBlob);
@@ -3831,35 +3834,30 @@ async function startFullProEditor(plantilla) {
                 pins.forEach(p => {
                     window.PRO_DRAFT_FIELDS.push({
                         id: 'pin_' + Math.random().toString(36).substr(2, 9),
-                        type: p.type === 'check' ? 'add-check' : 'text', // Mapeo a tipos pro
+                        type: p.type === 'check' ? 'add-check' : 'text', 
                         page: p.page || 1,
                         x: p.x,
                         y: p.y,
                         text: '',
-                        label: p.id, // El label es vital para el Web Form
+                        label: p.id, 
                         fontSize: 12
                     });
                 });
             } catch(e) { console.error('Error inyectando pines pro', e); }
         }
         
-        // Detección de XFA (Acrobat-style)
         const hasXFA = pdfDoc.catalog.has(PDFLib.PDFName.of('AcroForm')) && 
                        pdfDoc.catalog.lookup(PDFLib.PDFName.of('AcroForm')).has(PDFLib.PDFName.of('XFA'));
 
         if (hasXFA) {
-             showCustomModal('Documento XFA Detectado', 'Este PDF utiliza tecnología XFA antigua. PDFNova le permite convertirlo a campos editables modernos.', 'info');
-             const banner = document.createElement('div');
-             banner.style = "background:var(--secondary); color:white; padding:8px; width:100%; text-align:center; font-size:12px; font-weight:700;";
-             banner.innerHTML = '<i class="ph ph-magic-wand"></i> ¿Deseas convertir este XFA a AcroForms editables? <button onclick="flattenXFAToAcroForm()" style="margin-left:10px; background:white; color:var(--secondary); border:none; padding:2px 10px; border-radius:4px; cursor:pointer;">CONVERTIR AHORA</button>';
-             document.querySelector('.pro-ribbon-toolbar').appendChild(banner);
+             showCustomModal('Documento XFA Detectado', 'Este PDF utiliza tecnología XFA. Puede convertirlo a campos modernos.', 'info');
         }
-
+        
         renderProPageThumbnails();
         renderFullProCanvas();
     } catch (err) {
         console.error("Full Editor Error:", err);
-        showCustomModal('Error', 'Fallo al inicializar la Suite Profesional: ' + err.message, 'error');
+        showCustomModal('Diagnóstico Suite Pro', err.message, 'error');
     }
 }
 

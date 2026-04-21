@@ -69,8 +69,12 @@ router.post('/upload', authenticateToken, uploadForm.single('archivo'), async (r
             res.json({ mensaje: 'Plantilla creada con éxito' });
         }
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Error del servidor al procesar el archivo' });
+        console.error('DB_ERROR:', err);
+        res.status(500).json({ 
+            error: 'Error del servidor al procesar el archivo', 
+            detalle: err.message,
+            codigo: err.code 
+        });
     }
 });
 
@@ -111,23 +115,28 @@ router.get('/view/:id', authenticateToken, async (req, res) => {
         
         const rutaOriginal = result.rows[0].ruta_archivo;
         const rutaLimpia = rutaOriginal.replace(/^\/+/, '');
-        const fullPath = path.join(process.cwd(), rutaLimpia);
+        // Usar __dirname para mayor precisión en la ubicación del archivo
+        const fullPath = path.resolve(__dirname, '..', rutaLimpia);
         
         if (!fs.existsSync(fullPath)) {
-            console.error(`[PDF_VIEW] Archivo no existe en: ${fullPath}`);
-            return res.status(404).json({ error: 'Archivo físico no encontrado' });
+            console.error(`[PDF_VIEW] ALERTA: El archivo físico no existe en ${fullPath}. Posible reinicio de servidor.`);
+            return res.status(404).json({ 
+                error: 'Archivo físico no encontrado en el servidor',
+                detalle: 'El servidor se reinició y los archivos temporales se limpiaron. Por favor, vuelva a subir la plantilla en la sección de Plantillas.',
+                codigo: 'FILE_NOT_FOUND_AFTER_RESTART'
+            });
         }
         
         res.setHeader('Content-Type', 'application/pdf');
         const fileStream = fs.createReadStream(fullPath);
         fileStream.on('error', (err) => {
             console.error(`[STREAM_ERROR] ${err.message}`);
-            if(!res.headersSent) res.status(500).json({ error: 'Error al transmitir el documento' });
+            if(!res.headersSent) res.status(500).json({ error: 'Error al transmitir el documento', detalle: err.message });
         });
         fileStream.pipe(res);
     } catch (err) {
         console.error('[CRITICAL_PDF_VIEW]', err);
-        res.status(500).json({ error: 'Error interno sirviendo PDF' });
+        res.status(500).json({ error: 'Error interno sirviendo PDF', detalle: err.message });
     }
 });
 
