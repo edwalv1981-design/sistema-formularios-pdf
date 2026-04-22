@@ -35,6 +35,8 @@ async function initDB() {
             )
         `);
         await db.query(`ALTER TABLE documentos_personales ADD COLUMN IF NOT EXISTS estado_vigencia VARCHAR(30) DEFAULT 'NO DETECTADO'`);
+        await db.query(`ALTER TABLE documentos_personales ADD COLUMN IF NOT EXISTS archivo_base64 TEXT`);
+        await db.query(`ALTER TABLE documentos_personales ADD COLUMN IF NOT EXISTS tipo VARCHAR(50)`);
         
         await db.query(`
             CREATE TABLE IF NOT EXISTS formularios_firmados (
@@ -49,6 +51,7 @@ async function initDB() {
             )
         `);
         await db.query(`ALTER TABLE formularios_firmados ADD COLUMN IF NOT EXISTS validador_metadata JSONB`);
+        await db.query(`ALTER TABLE formularios_firmados ADD COLUMN IF NOT EXISTS archivo_base64 TEXT`);
         
         await db.query(`
             CREATE TABLE IF NOT EXISTS bitacora (
