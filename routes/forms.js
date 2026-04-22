@@ -87,41 +87,55 @@ router.get('/', authenticateTokenOpcional, async (req, res) => {
         const baseQuery = await db.query(`SELECT id, tipo, prefijo, nombre_archivo, ruta_archivo, fecha_carga, campos_configurados, html_content FROM formularios WHERE is_deleted = FALSE ORDER BY fecha_carga DESC`);
         rows = baseQuery.rows;
 
+        // --- DIAGNÓSTICO DE RAÍZ: LOGS DE FILTRADO ---
+        const userContext = req.user ? `[User:${req.user.id} Rol:${req.user.rol} Empresa:${req.user.id_empresa}]` : '[Público]';
+        console.log(`[FORMS_REQ] ${userContext} Solicitando catálogo de formularios...`);
+
         // Filtrar según el Rol
         if (req.user && req.user.rol === 'ADICIONAL') {
-            // REGLA TÉCNICA DE RAÍZ: El usuario Adicional HEREDA exactamente los mismos accesos que su administrador Empresa
             const parentId = req.user.id_empresa; 
             if(!parentId) {
+                console.warn(`[FORMS_WARN] Adicional ${req.user.id} no tiene id_empresa definido. Acceso denegado.`);
                 rows = []; 
             } else {
-                // 1. Obtener el 'tipo_formulario' base definido en la tabla de usuarios para el padre (Empresa)
                 const parentQuery = await db.query(`SELECT tipo_formulario FROM usuarios WHERE id = $1`, [parentId]);
                 const parentBaseType = parentQuery.rows.length ? parentQuery.rows[0].tipo_formulario : null;
 
-                // 2. Obtener la lista de formularios extendidos asignados al padre (Empresa) en 'usuario_permisos_formulario'
                 const parentExtendedPerms = await db.query(`SELECT tipo_formulario FROM usuario_permisos_formulario WHERE id_usuario = $1`, [parentId]);
-                const parentPermittedTypes = parentExtendedPerms.rows.map(r => r.tipo_formulario);
+                const parentPermittedTypes = parentExtendedPerms.rows.map(r => r.tipo_formulario.toLowerCase().trim());
 
-                // 3. (OPCIONAL) Obtener permisos específicos del propio Adicional (si se le asignaron extras por error o diseño previo)
                 const selfExtendedPerms = await db.query(`SELECT tipo_formulario FROM usuario_permisos_formulario WHERE id_usuario = $1`, [req.user.id]);
-                const selfPermittedTypes = selfExtendedPerms.rows.map(r => r.tipo_formulario);
+                const selfPermittedTypes = selfExtendedPerms.rows.map(r => r.tipo_formulario.toLowerCase().trim());
 
-                // Filtrado consolidated (Herencia Profunda)
-                rows = rows.filter(f => 
-                   f.tipo === parentBaseType || 
-                   parentPermittedTypes.includes(f.tipo) || 
-                   selfPermittedTypes.includes(f.tipo)
-                );
+                const normParentBase = parentBaseType ? parentBaseType.toLowerCase().trim() : null;
+
+                rows = rows.filter(f => {
+                   const normForm = f.tipo.toLowerCase().trim();
+                   const isBase = normForm === normParentBase;
+                   const inParentPerms = parentPermittedTypes.includes(normForm);
+                   const inSelfPerms = selfPermittedTypes.includes(normForm);
+                   return isBase || inParentPerms || inSelfPerms;
+                });
+                console.log(`[FORMS_RESULT] Adicional ${req.user.id} heredó ${rows.length} formularios de empresa ${parentId}`);
             }
         } else if (req.user && (req.user.rol === 'EMPRESA')) {
-            // El administrador de empresa ve su base + los asignados por el MASTER
             const usrQ = await db.query(`SELECT tipo_formulario FROM usuarios WHERE id = $1`, [req.user.id]);
             const baseType = usrQ.rows.length ? usrQ.rows[0].tipo_formulario : null;
             
             const extendedPerms = await db.query(`SELECT tipo_formulario FROM usuario_permisos_formulario WHERE id_usuario = $1`, [req.user.id]);
-            const permittedTypes = extendedPerms.rows.map(r => r.tipo_formulario);
+            const permittedTypes = extendedPerms.rows.map(r => r.tipo_formulario.toLowerCase().trim());
             
-            rows = rows.filter(f => f.tipo === baseType || permittedTypes.includes(f.tipo));
+            const normBase = baseType ? baseType.toLowerCase().trim() : null;
+
+            rows = rows.filter(f => {
+                const normForm = f.tipo.toLowerCase().trim();
+                return normForm === normBase || permittedTypes.includes(normForm);
+            });
+            console.log(`[FORMS_RESULT] Empresa ${req.user.id} tiene acceso a ${rows.length} formularios`);
+        } else if (req.user && req.user.rol === 'MASTER') {
+            console.log(`[FORMS_RESULT] Master ${req.user.id} tiene acceso TOTAL (${rows.length} formularios)`);
+        } else {
+            console.log(`[FORMS_RESULT] Acceso Público/Invitado: Retornando catálogo total (${rows.length} formularios)`);
         }
 
         res.json(rows);
