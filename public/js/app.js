@@ -1220,7 +1220,6 @@ async function fetchUsersList() {
                     if (u.bloqueado) {
                         authBtns += `<button onclick="desbloquearUser(${u.id})" class="btn-ghost" style="padding:4px 8px; border:1px solid #10b981; color:#10b981; margin-right:4px;" title="Quitar Bloqueo de Acceso"><i class="ph-bold ph-lock-key-open"></i></button>`;
                     }
-                    authBtns += `<button onclick="openFormPermissionsModal(${u.id})" class="btn-ghost" style="padding:4px 8px; border:1px solid #10b981; color:#10b981; margin-right:4px;" title="Configurar Plantillas"><i class="ph-bold ph-folder-open"></i></button>`;
                 }
                 authBtns += `<button onclick="deleteUser(${u.id})" class="btn-ghost" style="padding:4px 8px; border:1px solid #ef4444; color:#ef4444; margin-right:4px;" title="Eliminar">🗑️</button>`;
                 authBtns += `<button onclick="resetPassword(${u.id})" class="btn-ghost" style="padding:4px 8px; border:1px solid #6366f1; color:#6366f1;" title="Restablecer Contraseña"><i class="ph ph-key"></i></button>`;
