@@ -102,15 +102,15 @@ router.get('/', authenticateTokenOpcional, async (req, res) => {
                 const parentBaseType = parentQuery.rows.length ? parentQuery.rows[0].tipo_formulario : null;
 
                 const parentExtendedPerms = await db.query(`SELECT tipo_formulario FROM usuario_permisos_formulario WHERE id_usuario = $1`, [parentId]);
-                const parentPermittedTypes = parentExtendedPerms.rows.map(r => r.tipo_formulario.toLowerCase().trim());
+                const parentPermittedTypes = parentExtendedPerms.rows.map(r => r.tipo_formulario.toLowerCase().replace(/\s+/g, ' ').trim());
 
                 const selfExtendedPerms = await db.query(`SELECT tipo_formulario FROM usuario_permisos_formulario WHERE id_usuario = $1`, [req.user.id]);
-                const selfPermittedTypes = selfExtendedPerms.rows.map(r => r.tipo_formulario.toLowerCase().trim());
+                const selfPermittedTypes = selfExtendedPerms.rows.map(r => r.tipo_formulario.toLowerCase().replace(/\s+/g, ' ').trim());
 
-                const normParentBase = parentBaseType ? parentBaseType.toLowerCase().trim() : null;
+                const normParentBase = parentBaseType ? parentBaseType.toLowerCase().replace(/\s+/g, ' ').trim() : null;
 
                 rows = rows.filter(f => {
-                   const normForm = f.tipo.toLowerCase().trim();
+                   const normForm = f.tipo.toLowerCase().replace(/\s+/g, ' ').trim();
                    const isBase = normForm === normParentBase;
                    const inParentPerms = parentPermittedTypes.includes(normForm);
                    const inSelfPerms = selfPermittedTypes.includes(normForm);
@@ -123,12 +123,12 @@ router.get('/', authenticateTokenOpcional, async (req, res) => {
             const baseType = usrQ.rows.length ? usrQ.rows[0].tipo_formulario : null;
             
             const extendedPerms = await db.query(`SELECT tipo_formulario FROM usuario_permisos_formulario WHERE id_usuario = $1`, [req.user.id]);
-            const permittedTypes = extendedPerms.rows.map(r => r.tipo_formulario.toLowerCase().trim());
+            const permittedTypes = extendedPerms.rows.map(r => r.tipo_formulario.toLowerCase().replace(/\s+/g, ' ').trim());
             
-            const normBase = baseType ? baseType.toLowerCase().trim() : null;
+            const normBase = baseType ? baseType.toLowerCase().replace(/\s+/g, ' ').trim() : null;
 
             rows = rows.filter(f => {
-                const normForm = f.tipo.toLowerCase().trim();
+                const normForm = f.tipo.toLowerCase().replace(/\s+/g, ' ').trim();
                 return normForm === normBase || permittedTypes.includes(normForm);
             });
             console.log(`[FORMS_RESULT] Empresa ${req.user.id} tiene acceso a ${rows.length} formularios`);
