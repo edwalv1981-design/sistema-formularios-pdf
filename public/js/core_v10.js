@@ -1336,10 +1336,22 @@ async function handlePlantillaUpload(e) {
 }
 
 async function fetchPlantillas() {
+    const tbody = document.getElementById('forms-table-body');
+    if (!tbody) return;
+
     try {
-        const res = await fetch(`/api/formularios`);
+        const res = await fetch(`/api/formularios`, {
+            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+        });
         const plantillas = await res.json();
-        window.GLOBAL_PLANTILLAS = plantillas; // Cache global para Digitalización
+        
+        if (!Array.isArray(plantillas)) {
+            console.error('[FETCH_PLANTILLAS_ERROR] La respuesta no es un array:', plantillas);
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:12px; color:#ef4444;">Error al cargar catálogo: ${plantillas.error || 'Respuesta inválida'}</td></tr>`;
+            return;
+        }
+
+        window.GLOBAL_PLANTILLAS = plantillas; 
         
         let html = '';
         plantillas.forEach(p => {
@@ -1355,9 +1367,10 @@ async function fetchPlantillas() {
                 <td style="color:var(--text-muted); font-size:0.85rem;">${new Date(p.fecha_carga).toLocaleString()}</td>
             </tr>`;
         });
-        document.getElementById('forms-table-body').innerHTML = html || '<tr><td colspan="5" style="text-align:center; padding:12px;">No hay plantillas disponibles</td></tr>';
+        tbody.innerHTML = html || '<tr><td colspan="5" style="text-align:center; padding:12px;">No hay plantillas disponibles</td></tr>';
     } catch(err) {
-        console.error(err);
+        console.error('[FETCH_PLANTILLAS_CRITICAL]', err);
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:12px; color:#ef4444;">Falla de conexión con el repositorio maestro.</td></tr>';
     }
 }
 
