@@ -438,7 +438,15 @@ function getMenuByRole(rolInput) {
         menus.push({ id:'val-themes', label: 'Estilo de Interfaz', icon: 'ph ph-paint-brush' });
         menus.push({ id:'val-users', label: translations[currentLang].usuarios || 'Usuarios', icon:'ph ph-users' });
         menus.push({ id:'val-forms', label: translations[currentLang].plantillas || 'Plantillas', icon:'ph ph-file-pdf' });
-        menus.push({ id:'val-ediciones', label: 'Editar Formularios', icon: 'ph ph-note-pencil' });
+        menus.push({ 
+            id:'val-upload-info', 
+            label: 'Subir Información', 
+            icon: 'ph ph-cloud-arrow-up', 
+            submenus: [
+                { id: 'val-personal-docs', label: 'Subir Documentos', icon: 'ph ph-file-arrow-up' },
+                { id: 'val-signed-forms', label: 'Subir Formularios Firmados', icon: 'ph ph-signature' }
+            ]
+        });
         menus.push({ id:'val-bitacora', label: translations[currentLang].bitacora || 'Bitácora', icon:'ph ph-list-bullets' });
         menus.push({ id:'val-perfil', label: 'Mi Perfil', icon:'ph ph-user-circle', submenus: [
             { id: 'val-perfil-data', label: 'Información de Usuario', icon: 'ph ph-identification-card' },
@@ -448,13 +456,30 @@ function getMenuByRole(rolInput) {
         menus.push({ id:'val-themes', label: 'Estilo de Interfaz', icon: 'ph ph-paint-brush' });
         menus.push({ id:'val-adds', label: translations[currentLang].usuarios || 'Usuarios', icon:'ph ph-user-plus' });
         menus.push({ id:'val-perms', label: translations[currentLang].acciones || 'Acciones', icon:'ph ph-shield-check' });
+        menus.push({ 
+            id:'val-upload-info', 
+            label: 'Subir Información', 
+            icon: 'ph ph-cloud-arrow-up', 
+            submenus: [
+                { id: 'val-personal-docs', label: 'Subir Documentos', icon: 'ph ph-file-arrow-up' },
+                { id: 'val-signed-forms', label: 'Subir Formularios Firmados', icon: 'ph ph-signature' }
+            ]
+        });
 
         menus.push({ id:'val-perfil', label: 'Mi Perfil', icon:'ph ph-user-circle', submenus: [
             { id: 'val-perfil-data', label: 'Información de Usuario', icon: 'ph ph-identification-card' },
             { id: 'val-perfil-security', label: 'Cambio de Contraseña', icon: 'ph ph-shield-check' }
         ]});
-    } else if (rol === 'ADICIONAL' || rol === '3') {
         menus.push({ id:'val-themes', label: 'Estilo de Interfaz', icon: 'ph ph-paint-brush' });
+        menus.push({ 
+            id:'val-upload-info', 
+            label: 'Subir Información', 
+            icon: 'ph ph-cloud-arrow-up', 
+            submenus: [
+                { id: 'val-personal-docs', label: 'Subir Documentos', icon: 'ph ph-file-arrow-up' },
+                { id: 'val-signed-forms', label: 'Subir Formularios Firmados', icon: 'ph ph-signature' }
+            ]
+        });
         menus.push({ id:'val-bitacora', label: translations[currentLang].bitacora || 'Bitácora', icon:'ph ph-list-magnifying-glass' });
         menus.push({ id:'val-perfil', label: 'Mi Perfil', icon:'ph ph-user-circle', submenus: [
             { id: 'val-perfil-data', label: 'Información de Usuario', icon: 'ph ph-identification-card' },
@@ -1062,6 +1087,10 @@ function renderContent(menuId, title) {
             </div>
         `;
         fetchPlantillasParaEditor();
+    } else if (menuId === 'val-personal-docs') {
+        renderPersonalDocsView(content);
+    } else if (menuId === 'val-signed-forms') {
+        renderSignedFormsView(content);
     } else if (menuId === 'val-bitacora') {
         content.innerHTML = `
             <div class="glass-card" style="padding:40px;">
@@ -4744,6 +4773,280 @@ function flushActiveInputs() {
             if(field) field.text = el.innerText;
         }
     });
+}
+
+
+
+// ==========================================================================
+// MÓDULO: SUBIR DOCUMENTOS (PERSONALES)
+// ==========================================================================
+
+function renderPersonalDocsView(container) {
+    container.innerHTML = `
+        <div class="glass-card" style="padding:40px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
+                 <div>
+                    <h3 style="color:var(--primary);"><i class="ph ph-file-arrow-up"></i> Carpeta de Documentos</h3>
+                    <p style="font-size:0.9rem; color:var(--text-muted);">Repositorio seguro para sus respaldos e información personal.</p>
+                 </div>
+                 <button class="btn-primary" onclick="showUploadPersonalModal()"><i class="ph ph-plus"></i> Nuevo Documento</button>
+            </div>
+            
+            <div class="table-container">
+                <table style="width:100%; border-collapse:collapse;">
+                    <thead>
+                        <tr style="text-align:left; border-bottom:2px solid var(--border-color);">
+                            <th style="padding:12px;">Categoría</th>
+                            <th style="padding:12px;">Nombre de Archivo</th>
+                            <th style="padding:12px;">Fecha Carga</th>
+                            <th style="padding:12px; text-align:right;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="personal-docs-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+    `;
+    fetchPersonalDocs();
+}
+
+async function fetchPersonalDocs() {
+    const tbody = document.getElementById('personal-docs-table-body');
+    if(!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">Accediendo al servidor...</td></tr>';
+
+    try {
+        const response = await fetch('/api/documentacion-personal', {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        const data = await response.json();
+        tbody.innerHTML = '';
+
+        if (!data || data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:40px; color:var(--text-muted);">No tiene documentos cargados actualmente.</td></tr>';
+            return;
+        }
+
+        data.forEach(doc => {
+            const tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid var(--border-color)';
+            tr.innerHTML = `
+                <td style="padding:12px;"><span class="badge-blue">${doc.tipo}</span></td>
+                <td style="padding:12px;">${doc.nombre_archivo}</td>
+                <td style="padding:12px; color:var(--text-muted); font-size:11px;">${new Date(doc.fecha_carga).toLocaleString()}</td>
+                <td style="padding:12px; text-align:right;">
+                    <button class="action-btn" onclick="downloadPersonalDoc('${doc.id}', '${doc.nombre_archivo}')" title="Descargar"><i class="ph ph-download-simple"></i></button>
+                    <button class="action-btn btn-danger" onclick="deletePersonalDoc('${doc.id}')" title="Eliminar"><i class="ph ph-trash"></i></button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:20px; color:#ef4444;">Error al conectar con la base de datos.</td></tr>`;
+    }
+}
+
+function showUploadPersonalModal() {
+    const html = `
+        <div style="display:flex; flex-direction:column; gap:20px;">
+            <div class="form-group">
+                <label style="color:white; display:block; margin-bottom:10px;">Categoría</label>
+                <select id="doc-personal-type" style="width:100%; padding:10px; background:#0f172a; color:white; border:1px solid var(--border-color); border-radius:6px;">
+                    <option value="IDENTIDAD">Identidad / Cédula</option>
+                    <option value="ESTUDIOS">Títulos / Certificados</option>
+                    <option value="LEGAL">Documentos Legales</option>
+                    <option value="OTROS">Varios</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <input type="file" id="doc-personal-file" style="color:white;">
+            </div>
+            <button class="btn-primary" onclick="uploadPersonalFile()" style="width:100%"><i class="ph ph-upload"></i> Subir Documento</button>
+        </div>
+    `;
+    showCustomModal('Subir Documento Personal', html, 'info');
+}
+
+async function uploadPersonalFile() {
+    const fileInput = document.getElementById('doc-personal-file');
+    const typeInput = document.getElementById('doc-personal-type');
+    if(!fileInput.files[0]) return alert('Seleccione un archivo');
+
+    const formData = new FormData();
+    formData.append('archivo', fileInput.files[0]);
+    formData.append('tipo', typeInput.value);
+
+    try {
+        const res = await fetch('/api/documentacion-personal/upload', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+            body: formData
+        });
+        if(res.ok) {
+            showCustomModal('Éxito', 'Documento guardado en la base de datos.', 'success');
+            fetchPersonalDocs();
+        } else {
+            throw new Error('No se pudo guardar');
+        }
+    } catch (err) {
+        showCustomModal('Error', 'Falla en el servidor de base de datos.', 'error');
+    }
+}
+
+async function deletePersonalDoc(id) {
+    if(!confirm('¿Eliminar documento?')) return;
+    await fetch(`/api/documentacion-personal/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+    });
+    fetchPersonalDocs();
+}
+
+
+async function downloadPersonalDoc(id, nombre) {
+    const response = await fetch(`/api/documentacion-personal/view/${id}`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+    });
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = nombre;
+    a.click();
+}
+
+// ==========================================================================
+// MÓDULO: SUBIR FORMULARIOS FIRMADOS (CON AGENTE DE VALIDACIÓN)
+// ==========================================================================
+
+function renderSignedFormsView(container) {
+    container.innerHTML = `
+        <div class="glass-card" style="padding:40px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
+                 <div>
+                    <h3 style="color:var(--primary);"><i class="ph ph-signature"></i> Validación de Firmas</h3>
+                    <p style="font-size:0.9rem; color:var(--text-muted);">Carga de formularios con verificación criptográfica automática.</p>
+                 </div>
+                 <button class="btn-primary" onclick="showUploadSignedModal()"><i class="ph ph-upload-simple"></i> Validar Nuevo Formulario</button>
+            </div>
+            
+            <div class="table-container">
+                <table style="width:100%; border-collapse:collapse;">
+                    <thead>
+                        <tr style="text-align:left; border-bottom:2px solid var(--border-color);">
+                            <th style="padding:12px;">Documento</th>
+                            <th style="padding:12px;">Estado Firma</th>
+                            <th style="padding:12px;">Fecha Carga</th>
+                            <th style="padding:12px; text-align:right;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="signed-forms-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+    `;
+    fetchSignedForms();
+}
+
+async function fetchSignedForms() {
+    const tbody = document.getElementById('signed-forms-table-body');
+    if(!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">Accediendo al registro...</td></tr>';
+
+    try {
+        const response = await fetch('/api/formularios-firmados', {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        const data = await response.json();
+        tbody.innerHTML = '';
+
+        if (!data || data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:40px; color:var(--text-muted);">No tiene formularios firmados registrados.</td></tr>';
+            return;
+        }
+
+        data.forEach(item => {
+            const tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid var(--border-color)';
+            const badgeClass = item.is_valid ? 'badge-success' : 'badge-danger';
+            const badgeText = item.is_valid ? 'VÁLIDA' : 'NO DETECTADA';
+            
+            tr.innerHTML = `
+                <td style="padding:12px;"><strong>${item.nombre_archivo}</strong></td>
+                <td style="padding:12px;"><span class="${badgeClass}" style="padding:4px 8px; border-radius:4px; font-size:10px; font-weight:800;">${badgeText}</span></td>
+                <td style="padding:12px; color:var(--text-muted); font-size:11px;">${new Date(item.fecha_carga).toLocaleString()}</td>
+                <td style="padding:12px; text-align:right;">
+                    <button class="action-btn" onclick="downloadSignedForm('${item.id}', '${item.nombre_archivo}')" title="Descargar"><i class="ph ph-download"></i></button>
+                    <button class="action-btn btn-danger" onclick="deleteSignedForm('${item.id}')" title="Eliminar"><i class="ph ph-trash"></i></button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:20px; color:#ef4444;">Error de conexión.</td></tr>`;
+    }
+}
+
+function showUploadSignedModal() {
+    const html = `
+        <div style="display:flex; flex-direction:column; gap:20px;">
+            <p style="color:var(--text-muted); font-size:0.9rem;">Suba el PDF firmado. El Agente Experto validará la integridad y presencia de la firma digital.</p>
+            <div class="form-group">
+                <input type="file" id="signed-file-input" accept=".pdf" style="width:100%; border:1px dashed var(--border-color); padding:20px;">
+            </div>
+            <button class="btn-primary" onclick="uploadSignedFile()" style="width:100%"><i class="ph ph-fingerprint"></i> Validar y Guardar</button>
+        </div>
+    `;
+    showCustomModal('Validación de Formulario', html, 'info');
+}
+
+async function uploadSignedFile() {
+    const fileInput = document.getElementById('signed-file-input');
+    if(!fileInput.files[0]) return alert('Seleccione un archivo');
+
+    const formData = new FormData();
+    formData.append('archivo', fileInput.files[0]);
+
+    showCustomModal('Agente Validando...', 'Analizando firmas digitales criptográficas...', 'info');
+
+    try {
+        const res = await fetch('/api/formularios-firmados/upload', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+            body: formData
+        });
+        const result = await res.json();
+        
+        if(result.isValid) {
+            showCustomModal('Firma Válida', 'Documento guardado y validado con éxito.', 'success');
+        } else {
+            showCustomModal('Sin Firma', 'Documento guardado, pero NO se detectó firma digital.', 'warning');
+        }
+        fetchSignedForms();
+    } catch (err) {
+        showCustomModal('Error', 'Falla en el proceso de validación.', 'error');
+    }
+}
+
+async function deleteSignedForm(id) {
+    if(!confirm('¿Eliminar?')) return;
+    await fetch(`/api/formularios-firmados/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+    });
+    fetchSignedForms();
+}
+
+async function downloadSignedForm(id, nombre) {
+    const response = await fetch(`/api/formularios-firmados/view/${id}`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+    });
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = nombre;
+    a.click();
 }
 
 
