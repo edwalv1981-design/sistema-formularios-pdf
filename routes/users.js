@@ -295,16 +295,18 @@ router.delete('/:id', authenticateToken, async (req, res) => {
         return res.status(403).json({ error: 'Solo administradores pueden realizar esta acción' });
     }
 
+    console.log(`[DELETE_REQ] Iniciando baja para ID ${id}. Ejecutado por ${req.user.id} (${req.user.rol})`);
     await db.query(`UPDATE usuarios SET is_deleted = TRUE, deleted_at = CURRENT_TIMESTAMP WHERE id = $1`, [id]);
     
     // LOG DE AUDITORÍA
     await db.query(`INSERT INTO bitacora (id_usuario, id_empresa_contexto, accion, detalle) VALUES ($1, $2, $3, $4)`,
         [req.user.id, miEmpresa, 'ELIMINAR_USUARIO', `Se realizó el borrado lógico del usuario con ID ${id}`]);
 
+    console.log(`[DELETE_OK] Usuario ${id} dado de baja exitosamente.`);
     res.json({ mensaje: 'Usuario eliminado exitosamente' });
   } catch (err) {
-    console.error('[DELETE_USER_ERR]', err);
-    res.status(500).json({ error: 'Error al eliminar usuario' });
+    console.error('[DELETE_USER_ERR] ERROR CRÍTICO:', err);
+    res.status(500).json({ error: 'Error interno al procesar la baja: ' + err.message });
   }
 });
 

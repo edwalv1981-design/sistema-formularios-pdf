@@ -1275,13 +1275,20 @@ async function rejectUser(id) {
 async function deleteUser(id) {
     if (!confirm('¿Estás seguro de eliminar COMPLETA e irreversiblemente este usuario?')) return;
     try {
-        await fetch(`/api/usuarios/${id}`, {
+        const res = await fetch(`/api/usuarios/${id}`, {
             method: 'DELETE',
             headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
         });
+        const data = await res.json();
+        if (!res.ok) {
+            alert('Falla administrativa: ' + (data.error || 'Error desconocido'));
+            return;
+        }
+        alert(data.mensaje || 'Usuario eliminado con éxito.');
         fetchUsersList(); // Recargar tabla
     } catch(err) {
-        alert('Error al eliminar');
+        console.error('[DELETE_USER_ERR]', err);
+        alert('Falla de red o colapso en el servidor al intentar eliminar.');
     }
 }
 
