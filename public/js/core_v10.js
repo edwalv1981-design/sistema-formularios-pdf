@@ -5123,3 +5123,63 @@ function askSupport(topic) {
     
     chat.scrollTop = chat.scrollHeight;
 }
+function sendSupportQuery() {
+    const input = document.getElementById('support-input');
+    if(!input) return;
+    const query = input.value.trim();
+    if (!query) return;
+
+    appendUserMessage(query);
+    input.value = '';
+
+    // PROCESAMIENTO LOCAL - CEREBRO SAD DIGITAL
+    const lower = query.toLowerCase();
+    let response = "Hmm, no estoy seguro de cómo ayudarte con eso. Puedes intentar con palabras como 'usuario', 'contraseña', 'editar' o 'subir'.";
+
+    // Diccionario de Conocimiento Local
+    if (lower.includes('hola') || lower.includes('buenos') || lower.includes('que tal')) {
+        response = "¡Hola! Es un gusto saludarte. Soy el soporte de SAD Digital. ¿En qué módulo necesitas ayuda?";
+    } else if (lower.includes('contraseña') || lower.includes('clave') || lower.includes('password') || lower.includes('olvid')) {
+        response = "Puedes cambiar tu contraseña en el menú <b>Cambio de Contraseña</b> en la esquina inferior izquierda. Si la olvidaste, el administrador Master puede resetearla.";
+    } else if (lower.includes('usuario') || lower.includes('crear') || lower.includes('operador') || lower.includes('adicional')) {
+        response = "Para gestionar personal, ve a <b>Usuarios</b>. Las empresas crean Operadores Adicionales. El Master crea Empresas. Recuerda presionar 'Habilitar Cuenta'.";
+    } else if (lower.includes('editar') || lower.includes('formulario') || lower.includes('llenar') || lower.includes('escribir')) {
+        response = "Ve al menú <b>Editar Formularios</b>. Selecciona una plantilla y verás el documento. Haz clic donde quieras escribir o usa las herramientas de texto.";
+    } else if (lower.includes('subir') || lower.includes('firmado') || lower.includes('archivo') || lower.includes('pdf')) {
+        response = "Si tienes un documento ya firmado en tu PC, ve a <b>Subir Información > Subir Formularios Firmados</b>. Selecciona el archivo y sálvalo.";
+    } else if (lower.includes('permisos') || lower.includes('veo') || lower.includes('aparece')) {
+        response = "El sistema ahora tiene permisos automáticos. Si eres Empresa o Adicional, verás todos los formularios del catálogo general.";
+    } else if (lower.includes('eliminar') || lower.includes('borrar') || lower.includes('quitar')) {
+        response = "Los administradores pueden eliminar usuarios usando el icono de basura (🗑️) en la lista de usuarios.";
+    } else if (lower.includes('error') || lower.includes('falla') || lower.includes('ayuda') || lower.includes('soporte')) {
+        response = "Si experimentas una falla técnica, contacta al soporte técnico o indícame el error específico aquí.";
+    } else if (lower.includes('gracias') || lower.includes('bueno') || lower.includes('ok')) {
+        response = "¡De nada! Estoy aquí para ayudarte. ¿Algo más?";
+    }
+
+    setTimeout(() => {
+        appendAiMessage(response);
+    }, 600);
+}
+
+function appendUserMessage(text) {
+    const chat = document.getElementById('support-chat-content');
+    if(!chat) return;
+    const msg = document.createElement('div');
+    msg.className = 'support-bubble';
+    msg.style.cssText = 'background:var(--primary); color:white; align-self:flex-end; border-bottom-right-radius:4px; margin-top:8px;';
+    msg.innerHTML = text;
+    chat.appendChild(msg);
+    chat.scrollTop = chat.scrollHeight;
+}
+
+function appendAiMessage(html) {
+    const chat = document.getElementById('support-chat-content');
+    if(!chat) return;
+    const msg = document.createElement('div');
+    msg.className = 'support-bubble bubble-ai';
+    msg.style.marginTop = '8px';
+    msg.innerHTML = html;
+    chat.appendChild(msg);
+    chat.scrollTop = chat.scrollHeight;
+}

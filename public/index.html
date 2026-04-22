@@ -334,6 +334,10 @@
             </div>
 
             <div class="support-footer">
+                <div style="display:flex; gap:8px; padding:10px; background:rgba(255,255,255,0.05); border-radius:12px; margin-bottom:10px;">
+                    <input type="text" id="support-input" placeholder="Escribe tu duda aquí..." style="flex:1; background:transparent; border:none; color:white; font-size:0.85rem; outline:none;" onkeypress="if(event.key==='Enter') sendSupportQuery()">
+                    <button onclick="sendSupportQuery()" style="background:var(--primary); border:none; color:white; width:36px; height:36px; border-radius:8px; cursor:pointer;"><i class="ph-bold ph-paper-plane-right"></i></button>
+                </div>
                 <p>© 2026 SAD Digital • Centro de Ayuda</p>
             </div>
         </div>
@@ -341,6 +345,6 @@
 
     <!-- Script Principal -->
 
-    <script src="js/core_v10.js?v=12.1.1"></script>
+    <script src="js/core_v10.js?v=12.2.0"></script>
 </body>
 </html>
