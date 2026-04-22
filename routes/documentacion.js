@@ -34,7 +34,7 @@ const upload = multer({
 });
 
 // SUBIR DOCUMENTO PERSONAL
-router.post('/upload', authenticateToken, upload.single('archivo'), async (req, res) => {
+router.post('/upload', authenticateToken, upload.single('archivo'), async (req, res, next) => {
     try {
         const { tipo } = req.body;
         if (!req.file) return res.status(400).json({ error: 'No se adjuntó archivo' });
@@ -59,6 +59,7 @@ router.post('/upload', authenticateToken, upload.single('archivo'), async (req, 
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Falla en el servidor de base de datos', detalle: err.message });
+        if (typeof next === 'function') next(err);
     }
 });
 
