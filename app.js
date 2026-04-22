@@ -16,6 +16,47 @@ const userRoutes = require('./routes/users');
 const formRoutes = require('./routes/forms');
 const digitRoutes = require('./routes/digit');
 
+// === SINCRONIZACIÓN DE BASE DE DATOS (Auto-Migración) ===
+async function initDB() {
+    try {
+        console.log('Validando esquema de base de datos...');
+        // Asegurar tablas y columnas nuevas
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS documentos_personales (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER,
+                tipo VARCHAR(50),
+                nombre_archivo TEXT,
+                ruta_archivo TEXT,
+                fecha_carga TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                fecha_expiracion DATE,
+                archivo_base64 TEXT,
+                estado_vigencia VARCHAR(30) DEFAULT 'NO DETECTADO'
+            )
+        `);
+        await db.query(`ALTER TABLE documentos_personales ADD COLUMN IF NOT EXISTS estado_vigencia VARCHAR(30) DEFAULT 'NO DETECTADO'`);
+        
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS formularios_firmados (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER,
+                nombre_archivo TEXT,
+                ruta_archivo TEXT,
+                is_valid BOOLEAN DEFAULT FALSE,
+                fecha_carga TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                validador_metadata JSONB,
+                archivo_base64 TEXT
+            )
+        `);
+        await db.query(`ALTER TABLE formularios_firmados ADD COLUMN IF NOT EXISTS validador_metadata JSONB`);
+        
+        console.log('Esquema de base de datos sincronizado.');
+    } catch (err) {
+        console.error('ERROR CRÍTICO EN SINCRONIZACIÓN DB:', err);
+    }
+}
+initDB();
+
 const app = express();
 
 // Middleware de Registro Global (Diagnóstico Root)
