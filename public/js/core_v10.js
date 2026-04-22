@@ -5132,34 +5132,80 @@ function sendSupportQuery() {
     appendUserMessage(query);
     input.value = '';
 
-    // PROCESAMIENTO LOCAL - CEREBRO SAD DIGITAL
-    const lower = query.toLowerCase();
-    let response = "Hmm, no estoy seguro de cómo ayudarte con eso. Puedes intentar con palabras como 'usuario', 'contraseña', 'editar' o 'subir'.";
-
-    // Diccionario de Conocimiento Local
-    if (lower.includes('hola') || lower.includes('buenos') || lower.includes('que tal')) {
-        response = "¡Hola! Es un gusto saludarte. Soy el soporte de SAD Digital. ¿En qué módulo necesitas ayuda?";
-    } else if (lower.includes('contraseña') || lower.includes('clave') || lower.includes('password') || lower.includes('olvid')) {
-        response = "Puedes cambiar tu contraseña en el menú <b>Cambio de Contraseña</b> en la esquina inferior izquierda. Si la olvidaste, el administrador Master puede resetearla.";
-    } else if (lower.includes('usuario') || lower.includes('crear') || lower.includes('operador') || lower.includes('adicional')) {
-        response = "Para gestionar personal, ve a <b>Usuarios</b>. Las empresas crean Operadores Adicionales. El Master crea Empresas. Recuerda presionar 'Habilitar Cuenta'.";
-    } else if (lower.includes('editar') || lower.includes('formulario') || lower.includes('llenar') || lower.includes('escribir')) {
-        response = "Ve al menú <b>Editar Formularios</b>. Selecciona una plantilla y verás el documento. Haz clic donde quieras escribir o usa las herramientas de texto.";
-    } else if (lower.includes('subir') || lower.includes('firmado') || lower.includes('archivo') || lower.includes('pdf')) {
-        response = "Si tienes un documento ya firmado en tu PC, ve a <b>Subir Información > Subir Formularios Firmados</b>. Selecciona el archivo y sálvalo.";
-    } else if (lower.includes('permisos') || lower.includes('veo') || lower.includes('aparece')) {
-        response = "El sistema ahora tiene permisos automáticos. Si eres Empresa o Adicional, verás todos los formularios del catálogo general.";
-    } else if (lower.includes('eliminar') || lower.includes('borrar') || lower.includes('quitar')) {
-        response = "Los administradores pueden eliminar usuarios usando el icono de basura (🗑️) en la lista de usuarios.";
-    } else if (lower.includes('error') || lower.includes('falla') || lower.includes('ayuda') || lower.includes('soporte')) {
-        response = "Si experimentas una falla técnica, contacta al soporte técnico o indícame el error específico aquí.";
-    } else if (lower.includes('gracias') || lower.includes('bueno') || lower.includes('ok')) {
-        response = "¡De nada! Estoy aquí para ayudarte. ¿Algo más?";
-    }
+    // RESPUESTA DE ESPERA (SIMULANDO PENSAMIENTO)
+    const chat = document.getElementById('support-chat-content');
+    const typing = document.createElement('div');
+    typing.className = 'support-bubble bubble-ai';
+    typing.id = 'ai-typing';
+    typing.innerHTML = '<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>';
+    typing.style.width = 'fit-content';
+    chat.appendChild(typing);
+    chat.scrollTop = chat.scrollHeight;
 
     setTimeout(() => {
+        const typingElem = document.getElementById('ai-typing');
+        if(typingElem) typingElem.remove();
+        
+        const response = processSADIntelligence(query);
         appendAiMessage(response);
-    }, 600);
+    }, 1200);
+}
+
+function processSADIntelligence(query) {
+    const q = query.toLowerCase();
+    
+    // Matriz de Intenciones y Respuestas
+    const knowledge = [
+        {
+            keys: ['hola', 'buen', 'tal', 'alguien'],
+            ans: "¡Hola! Soy el asistente oficial de <b>SAD Digital</b>. Estoy entrenado para ayudarte con la gestión de usuarios, edición de formularios y soporte técnico. ¿Qué quieres hacer hoy?"
+        },
+        {
+            keys: ['usuario', 'crear', 'nuevo', 'registrar', 'cuenta', 'operador', 'adicional', 'empresa'],
+            ans: "Para crear un usuario, dirígete al menú <b>Usuarios</b> en el panel izquierdo. <br><br>• Si eres <b>MASTER</b>: Usa el formulario superior para registrar nuevas Empresas.<br>• Si eres <b>EMPRESA</b>: Usa el formulario 'Operadores Adicionales' para crear tus cuentas operativas.<br><br>Recuerda que al crearlos, el sistema los habilita automáticamente si los datos son correctos."
+        },
+        {
+            keys: ['contraseña', 'clave', 'password', 'olvide', 'perdi', 'cambiar', 'reset'],
+            ans: "Tienes dos opciones:<br>1. <b>Cambio Propio</b>: Ve al menú 'Cambio de Contraseña' abajo a la izquierda.<br>2. <b>Reseteo</b>: El administrador Master puede entrar a la lista de usuarios y resetear la clave de cualquier cuenta si esta se ha bloqueado."
+        },
+        {
+            keys: ['editar', 'formulario', 'llenar', 'escribir', 'pdf', 'firma', 'digital', 'campos'],
+            ans: "¡Es muy fácil! Entra en <b>Editar Formularios</b>. Selecciona el catálogo y abre la plantilla. <br><br>Usa las herramientas de la barra superior para:<br>• 📝 <b>Texto</b>: Clic y escribe.<br>• 🖋️ <b>Firma</b>: Arrastra tu firma al documento.<br>• 💾 <b>Guardar</b>: No olvides presionar 'Guardar Edición' para salvar los cambios."
+        },
+        {
+            keys: ['subir', 'cargar', 'archivo', 'pc', 'computador', 'firmado', 'disco'],
+            ans: "Si ya tienes un PDF firmado externamente, ve a <b>Subir Información > Subir Formularios Firmados</b>. Arrastra el archivo allí, selecciona el cliente/expediente y dale a subir. El sistema lo archivará en la nube de SAD Digital."
+        },
+        {
+            keys: ['permisos', 'veo', 'aparece', 'lista', 'vacía', 'herencia'],
+            ans: "Hemos simplificado el sistema: <b>Los permisos ahora son universales</b>. Si eres Empresa o Adicional, verás automáticamente todos los formularios que el Máster haya subido. Si la lista está vacía, es posible que el Máster aún no haya cargado plantillas generales."
+        },
+        {
+            keys: ['eliminar', 'borrar', 'quitar', 'limpiar', 'basura', 'fantasma'],
+            ans: "Los registros se pueden eliminar desde el icono de 🗑️ en la tabla de Usuarios. Actualmente, el sistema realiza una <b>purga física</b> para que las identificaciones queden libres inmediatamente para nuevos registros."
+        },
+        {
+            keys: ['error', 'falla', 'bug', 'problema', 'mal', 'funciona', 'ayuda', 'maquina'],
+            ans: "Entiendo. Si visualizas un error técnico, primero intenta <b>Ctrl + F5</b>. Si persiste, escribe el código de error aquí. Estaré atento para reportarlo al equipo técnico de soporte prioritario."
+        },
+        {
+            keys: ['quien', 'eres', 'nombre', 'haces'],
+            ans: "Soy el <b>Asistente de Soporte SAD Digital</b>, una inteligencia diseñada exclusivamente para esta plataforma. No soy una IA genérica; mi conocimiento es específico sobre tus procesos documentales."
+        },
+        {
+            keys: ['gracias', 'ok', 'entiendo', 'perfecto', 'bien', 'listo'],
+            ans: "¡Excelente! Me alegra haber podido ayudarte. Estaré aquí en la esquina inferior si necesitas algo más. ¡Buen trabajo!"
+        }
+    ];
+
+    // Buscador de Relevancia
+    for (const entry of knowledge) {
+        if (entry.keys.some(key => q.includes(key))) {
+            return entry.ans;
+        }
+    }
+
+    return "No tengo una respuesta exacta para eso, pero puedo ayudarte con: <b>Usuarios, Contraseñas, Edición de PDF o Carga de Archivos</b>. ¿Podrías ser más específico?";
 }
 
 function appendUserMessage(text) {
