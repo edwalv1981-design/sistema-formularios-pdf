@@ -232,4 +232,34 @@ router.patch('/:id/manual-date', authenticateToken, async (req, res) => {
     }
 });
 
+// ACTUALIZACIÓN MANUAL DE FECHA DE EXPIRACIÓN
+router.patch('/:id/manual-date', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { fecha_expiracion } = req.body;
+        const userId = req.user.id;
+
+        if (!fecha_expiracion) return res.status(400).json({ error: 'Fecha requerida' });
+
+        // Recalcular estado
+        const expDate = new Date(fecha_expiracion + 'T23:59:59');
+        const today = new Date();
+        const estadoVigencia = expDate >= today ? 'VIGENTE' : 'EXPIRADO';
+
+        await db.query(
+            'UPDATE documentos_personales SET fecha_expiracion = $1, estado_vigencia = $2 WHERE id = $3 AND user_id = $4',
+            [fecha_expiracion, estadoVigencia, id, userId]
+        );
+
+        // Bitácora
+        await db.query(`INSERT INTO bitacora (id_usuario, accion, detalle) VALUES ($1, $2, $3)`,
+            [userId, 'UPDATE_DOC_EXPIRY', `Cambio manual de fecha de expiración a ${fecha_expiracion} (Nuevo Estado: ${estadoVigencia}) para el doc ID: ${id}`]);
+
+        res.json({ success: true, estado: estadoVigencia });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Falla al actualizar fecha' });
+    }
+});
+
 module.exports = router;

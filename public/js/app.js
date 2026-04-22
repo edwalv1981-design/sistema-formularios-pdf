@@ -4833,13 +4833,17 @@ async function fetchPersonalDocs() {
             tr.style.borderBottom = '1px solid var(--border-color)';
             
             const badgeClass = doc.estado_vigencia === 'VIGENTE' ? 'badge-success' : 'badge-danger';
-            const displayDate = doc.fecha_expiracion ? new Date(doc.fecha_expiracion).toLocaleDateString() : 'N/A';
+            
+            // Lógica de visualización ajustable para fecha manual
+            const displayDate = doc.fecha_expiracion 
+                ? `<span style="font-size:11px;">${new Date(doc.fecha_expiracion).toLocaleDateString()}</span> <button class="action-btn" onclick="toggleDateEdit('${doc.id}')" style="padding:2px; vertical-align:middle;" title="Cambiar"><i class="ph ph-calendar"></i></button>` 
+                : `<button class="btn-primary" onclick="toggleDateEdit('${doc.id}')" style="padding:4px 8px; font-size:10px; border-radius:4px;"><i class="ph ph-calendar-plus"></i> Ingresar Fecha</button>`;
 
             tr.innerHTML = `
                 <td style="padding:12px;"><span class="badge-blue">${doc.tipo}</span></td>
                 <td style="padding:12px;">${doc.nombre_archivo}</td>
-                <td style="padding:12px;"><span class="${badgeClass}">${doc.estado_vigencia}</span></td>
-                <td style="padding:12px; color:var(--text-muted); font-size:11px;">${displayDate}</td>
+                <td style="padding:12px;"><span class="${badgeClass}">${doc.estado_vigencia || 'NO DETECTADO'}</span></td>
+                <td style="padding:12px; min-width:120px;" id="expiry-cell-${doc.id}">${displayDate}</td>
                 <td style="padding:12px; text-align:right;">
                     <button class="action-btn" onclick="downloadPersonalDoc('${doc.id}', '${doc.nombre_archivo}')" title="Descargar"><i class="ph ph-download-simple"></i></button>
                     <button class="action-btn btn-danger" onclick="deletePersonalDoc('${doc.id}')" title="Eliminar"><i class="ph ph-trash"></i></button>
@@ -4848,9 +4852,45 @@ async function fetchPersonalDocs() {
             tbody.appendChild(tr);
         });
     } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:20px; color:#ef4444;">Error al conectar con la base de datos.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color:#ef4444;">Error al conectar con la base de datos.</td></tr>`;
     }
 }
+
+// Funciones para edición manual de fecha
+function toggleDateEdit(docId) {
+    const cell = document.getElementById(`expiry-cell-${docId}`);
+    cell.innerHTML = `
+        <div style="display:flex; align-items:center; gap:5px;">
+            <input type="date" id="input-expiry-${docId}" style="padding:4px; font-size:10px; background:rgba(0,0,0,0.2); color:white; border:1px solid var(--primary); border-radius:4px;">
+            <button class="action-btn" style="color:#10b981;" onclick="saveManualDate('${docId}')"><i class="ph ph-check-circle"></i></button>
+            <button class="action-btn" style="color:#ef4444;" onclick="fetchPersonalDocs()"><i class="ph ph-x-circle"></i></button>
+        </div>
+    `;
+}
+
+async function saveManualDate(docId) {
+    const dateInput = document.getElementById(`input-expiry-${docId}`);
+    if(!dateInput.value) return;
+
+    try {
+        const res = await fetch(`/api/documentacion-personal/${docId}/manual-date`, {
+            method: 'PATCH',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}` 
+            },
+            body: JSON.stringify({ fecha_expiracion: dateInput.value })
+        });
+        if(res.ok) {
+            fetchPersonalDocs();
+        } else {
+            alert('Error al guardar la fecha');
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
+
 
 function showUploadPersonalModal() {
     const html = `
