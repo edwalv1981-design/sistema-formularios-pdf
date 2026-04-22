@@ -521,6 +521,7 @@ function renderContent(menuId, title) {
             <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
                 <div class="glass-card stat-card"><i class="ph-duotone ph-users"></i><h3 id="stat-total">-</h3><p>Usuarios Registrados</p></div>
                 <div class="glass-card stat-card"><i class="ph-duotone ph-spinner-gap"></i><h3 id="stat-pending">-</h3><p>Pendientes Aprobación</p></div>
+                <div class="glass-card stat-card"><i class="ph-duotone ph-prohibit"></i><h3 id="stat-rejected" style="color:#ef4444;">-</h3><p>Usuarios Rechazados</p></div>
             </div>
             <div class="glass-card" style="padding:24px; overflow-x:auto;">
                 <table style="width:100%; text-align:left; border-collapse:collapse;">
@@ -1186,11 +1187,13 @@ async function fetchUsersList() {
         
         let html = '';
         let pending = 0;
+        let rejected = 0;
         
         const myUser = getSafeUser();
 
         users.forEach(u => {
             if(u.estado === 'PENDIENTE') pending++;
+            if(u.estado === 'RECHAZADO') rejected++;
             
             let statusText = '';
             if(u.estado === 'ACTIVO') statusText = '<span style="color:var(--secondary)">Activo</span>';
@@ -1238,6 +1241,8 @@ async function fetchUsersList() {
         document.getElementById('users-table-body').innerHTML = html || '<tr><td colspan="6" style="text-align:center; padding:12px;">No hay usuarios aún</td></tr>';
         document.getElementById('stat-total').innerText = users.length;
         document.getElementById('stat-pending').innerText = pending;
+        const statRejected = document.getElementById('stat-rejected');
+        if(statRejected) statRejected.innerText = rejected;
     } catch(err) {
         document.getElementById('users-table-body').innerHTML = '<tr><td colspan="6" style="color:red; text-align:center;">Error cargando datos</td></tr>';
     }
