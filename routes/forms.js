@@ -91,63 +91,14 @@ router.get('/', authenticateTokenOpcional, async (req, res) => {
         const userContext = req.user ? `[User:${req.user.id} Rol:${req.user.rol} Empresa:${req.user.id_empresa}]` : '[Público]';
         console.log(`[FORMS_REQ] ${userContext} Solicitando catálogo de formularios...`);
 
-        // Filtrar según el Rol
-        if (req.user && req.user.rol === 'ADICIONAL') {
-            const parentId = req.user.id_empresa; 
-            if(!parentId) {
-                console.warn(`[FORMS_WARN] Adicional ${req.user.id} no tiene id_empresa definido. Acceso denegado.`);
-                rows = []; 
-            } else {
-                const parentQuery = await db.query(`SELECT tipo_formulario FROM usuarios WHERE id = $1`, [parentId]);
-                const parentBaseType = parentQuery.rows.length ? parentQuery.rows[0].tipo_formulario : null;
-
-                const parentExtendedPerms = await db.query(`SELECT tipo_formulario FROM usuario_permisos_formulario WHERE id_usuario = $1`, [parentId]);
-                const parentPermittedTypes = parentExtendedPerms.rows.map(r => r.tipo_formulario.toLowerCase().replace(/\s+/g, ' ').trim());
-
-                const selfExtendedPerms = await db.query(`SELECT tipo_formulario FROM usuario_permisos_formulario WHERE id_usuario = $1`, [req.user.id]);
-                const selfPermittedTypes = selfExtendedPerms.rows.map(r => r.tipo_formulario.toLowerCase().replace(/\s+/g, ' ').trim());
-
-                const normParentBase = parentBaseType ? parentBaseType.toLowerCase().replace(/\s+/g, ' ').trim() : null;
-                console.log(`[DEBUG_FORMS] ADICIONAL: ${req.user.id}, BASE: ${normParentBase}`);
-
-                rows = rows.filter(f => {
-                   const normForm = f.tipo.toLowerCase().replace(/\s+/g, ' ').trim();
-                   const isBase = normForm === normParentBase;
-                   const inParentPerms = parentPermittedTypes.includes(normForm);
-                   const inSelfPerms = selfPermittedTypes.includes(normForm);
-                   
-                   if (isBase) console.log(`[DEBUG_FORMS] MATCH FOUND: ${f.tipo}`);
-                   
-                   return isBase || inParentPerms || inSelfPerms;
-                });
-                console.log(`[FORMS_RESULT] Adicional ${req.user.id} heredó ${rows.length} formularios de empresa ${parentId}`);
-            }
-        } else if (req.user && (req.user.rol === 'EMPRESA')) {
-            const usrQ = await db.query(`SELECT tipo_formulario FROM usuarios WHERE id = $1`, [req.user.id]);
-            const baseType = usrQ.rows.length ? usrQ.rows[0].tipo_formulario : null;
-            
-            const extendedPerms = await db.query(`SELECT tipo_formulario FROM usuario_permisos_formulario WHERE id_usuario = $1`, [req.user.id]);
-            const permittedTypes = extendedPerms.rows.map(r => r.tipo_formulario.toLowerCase().replace(/\s+/g, ' ').trim());
-            
-            const normBase = baseType ? baseType.toLowerCase().replace(/\s+/g, ' ').trim() : null;
-            console.log(`[DEBUG_FORMS] EMPRESA: ${req.user.id}, BASE: ${normBase}`);
-
-            rows = rows.filter(f => {
-                const normForm = f.tipo.toLowerCase().replace(/\s+/g, ' ').trim();
-                const isMatch = normForm === normBase || permittedTypes.includes(normForm);
-                if (isMatch) console.log(`[DEBUG_FORMS] MATCH FOUND FOR EMPRESA: ${f.tipo}`);
-                return isMatch;
-            });
-            console.log(`[FORMS_RESULT] Empresa ${req.user.id} tiene acceso a ${rows.length} formularios`);
-        } else if (req.user && req.user.rol === 'MASTER') {
-            console.log(`[FORMS_RESULT] Master ${req.user.id} tiene acceso TOTAL (${rows.length} formularios)`);
-        } else {
-            console.log(`[FORMS_RESULT] Acceso Público/Invitado: Retornando catálogo total (${rows.length} formularios)`);
-        }
-
+        // NUEVA CONDICIÓN GLOBAL: Máster, Empresa y Adicional ven TODOS los formularios cargados.
+        console.log(`[FORMS_ACCESS] Usuario ${req.user.id ? req.user.id : 'Anónimo'} [${req.user ? req.user.rol : 'Público'}] consultando catálogo universal.`);
+        
+        // No aplicamos filtros restrictivos. Se devuelven todas las plantillas activas.
         res.json(rows);
     } catch (err) {
-        res.status(500).json({ error: 'Error obteniendo plantillas' });
+        console.error('[FORMS_GET_ERR]', err);
+        res.status(500).json({ error: 'Error al obtener formularios' });
     }
 });
 
