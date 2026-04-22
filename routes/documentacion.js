@@ -64,7 +64,6 @@ router.post('/upload', authenticateToken, upload.single('archivo'), async (req, 
 
         res.json({ message: 'Documento procesado con éxito', estado: estadoVigencia });
     } catch (err) {
-    } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Falla en el servidor de base de datos' });
         if (typeof next === 'function') next(err);
