@@ -453,7 +453,6 @@ function getMenuByRole(rolInput) {
     } else if (rol === 'EMPRESA' || rol === '2') {
         menus.push({ id:'val-themes', label: 'Estilo de Interfaz', icon: 'ph ph-paint-brush' });
         menus.push({ id:'val-adds', label: 'Usuarios', icon:'ph ph-user-plus' });
-        menus.push({ id:'val-forms', label: 'Plantillas', icon:'ph ph-file-pdf' });
         menus.push({ id:'val-ediciones', label: 'Editar Formularios', icon:'ph ph-note-pencil' });
         menus.push({ 
             id:'val-upload-info', 
@@ -1009,7 +1008,7 @@ function renderContent(menuId, title) {
                         </div>
                     </div>
                     <button type="submit" class="btn-primary" style="background:#ef4444; margin-top:10px;">
-                        <i class="ph ph-shield-check"></i> Actualizar mi Contraseña Maestra
+                        <i class="ph ph-shield-check"></i> Actualizar mi Contraseña
                     </button>
                 </form>
             </div>
