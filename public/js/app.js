@@ -2987,28 +2987,42 @@ async function openFormPermissionsModal(idUsuario) {
 
     try {
         // Cargar todos los formularios
-        const resForms = await fetch(`/api/formularios`);
+        const resForms = await fetch(`/api/formularios`, {
+            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+        });
+        if (!resForms.ok) throw new Error(`Status ${resForms.status}`);
+        
         const allForms = await resForms.json();
+        if (!Array.isArray(allForms)) throw new Error('Catálogo no es un array');
 
         // Cargar los permitidos actuales
         const resPerms = await fetch(`/api/usuarios/${idUsuario}/permisos-formularios`, {
             headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
         });
+        if (!resPerms.ok) throw new Error(`Perms Status ${resPerms.status}`);
+        
         const permittedTypes = await resPerms.json();
+        const permsArray = Array.isArray(permittedTypes) ? permittedTypes : [];
 
         let html = '';
         allForms.forEach(f => {
-            const isChecked = permittedTypes.includes(f.tipo) ? 'checked' : '';
+            const isChecked = permsArray.includes(f.tipo) ? 'checked' : '';
             html += `
-                <label style="display:flex; align-items:center; gap:8px; background:rgba(0,0,0,0.2); padding:10px; border-radius:6px; cursor:pointer;">
-                    <input type="checkbox" name="form_permitido" value="${f.tipo}" ${isChecked}>
-                    <span style="font-weight:500;">${f.tipo} <small style="color:var(--text-muted);">(${f.prefijo})</small></span>
+                <label style="display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.05); padding:10px; border-radius:10px; cursor:pointer; border:1px solid rgba(255,255,255,0.1); width:100%;">
+                    <input type="checkbox" name="form_permitido" value="${f.tipo}" ${isChecked} style="width:18px; height:18px;">
+                    <span style="font-weight:500; font-size:0.95rem;">${f.tipo} <small style="display:block; color:var(--secondary); opacity:0.8;">Prefijo: ${f.prefijo}</small></span>
                 </label>
             `;
         });
-        container.innerHTML = html || 'No hay formularios registrados en el sistema.';
+        container.innerHTML = html || '<div style="text-align:center; padding:20px; color:var(--text-muted);">No hay formularios disponibles para asignar.</div>';
     } catch(err) {
-        container.innerHTML = '<span style="color:red;">Error de conexión.</span>';
+        console.error('[PERMS_MODAL_ERR]', err);
+        container.innerHTML = `<div style="color:#ef4444; text-align:center; padding:20px;">
+            <i class="ph ph-warning" style="font-size:2rem; margin-bottom:10px;"></i><br>
+            <b>Error de conexión</b><br>
+            <small>${err.message}</small><br>
+            <button onclick="openFormPermissionsModal(${idUsuario})" class="btn-primary" style="margin-top:15px; padding:6px 12px; font-size:0.8rem;">Reintentar</button>
+        </div>`;
     }
 }
 
