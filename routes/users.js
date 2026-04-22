@@ -276,18 +276,35 @@ async function handleMasterProfileUpdate(req, res) {
 router.put('/:id/perfil', authenticateToken, handleMasterProfileUpdate);
 
 // Eliminar usuario (Soft Delete para mantener historico)
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticateToken, async (req, res) => {
+  const { id } = req.params;
   try {
-    await db.query(`UPDATE usuarios SET is_deleted = TRUE, deleted_at = CURRENT_TIMESTAMP WHERE id = $1`, [req.params.id]);
+    // Validaciones técnicas de seguridad
+    const checkQ = await db.query(`SELECT id_empresa, id_rol FROM usuarios WHERE id = $1`, [id]);
+    if (checkQ.rows.length === 0) return res.status(404).json({ error: 'Usuario no encontrado' });
+    
+    const target = checkQ.rows[0];
+    const miEmpresa = req.user.id_empresa || req.user.id;
+
+    if (req.user.rol === 'EMPRESA') {
+        // La empresa solo borra sus propios operadores
+        if (target.id_empresa !== miEmpresa || target.id_rol !== 3) {
+            return res.status(403).json({ error: 'No tiene permisos para eliminar a este usuario' });
+        }
+    } else if (req.user.rol !== 'MASTER') {
+        return res.status(403).json({ error: 'Solo administradores pueden realizar esta acción' });
+    }
+
+    await db.query(`UPDATE usuarios SET is_deleted = TRUE, deleted_at = CURRENT_TIMESTAMP WHERE id = $1`, [id]);
     
     // LOG DE AUDITORÍA
-    const idEmpresa = req.user.id_empresa || req.user.id;
     await db.query(`INSERT INTO bitacora (id_usuario, id_empresa_contexto, accion, detalle) VALUES ($1, $2, $3, $4)`,
-        [req.user.id, idEmpresa, 'ELIMINAR_USUARIO', `Se realizó el borrado lógico del usuario con ID ${req.params.id}`]);
+        [req.user.id, miEmpresa, 'ELIMINAR_USUARIO', `Se realizó el borrado lógico del usuario con ID ${id}`]);
 
     res.json({ mensaje: 'Usuario eliminado exitosamente' });
   } catch (err) {
-    res.status(500).json({ error: 'Error al eliminar' });
+    console.error('[DELETE_USER_ERR]', err);
+    res.status(500).json({ error: 'Error al eliminar usuario' });
   }
 });
 
