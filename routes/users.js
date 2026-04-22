@@ -120,6 +120,7 @@ router.post('/adicional', authenticateToken, async (req, res) => {
     if (req.user.rol !== 'EMPRESA') return res.status(403).json({ error: 'Solo empresas pueden crear operativos adicionales' });
     const { nombres_completos, identificacion, direccion, telefono, password } = req.body;
     
+    try {
         console.log(`[CREATE_ADD] Empresa ${req.user.id} intentando crear operador: ${identificacion}`);
         
         const resRole = await db.query(`SELECT id FROM roles WHERE nombre = 'ADICIONAL'`);
