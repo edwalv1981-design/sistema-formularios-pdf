@@ -113,19 +113,6 @@ app.use('/api/documentacion-personal', require('./routes/documentacion'));
 app.use('/api/formularios-firmados', require('./routes/firmas'));
 app.get('/api/ping', (req, res) => res.send('pong'));
 
-// ENDPOINT DE DIAGNÓSTICO (Solo para esta emergencia)
-app.get('/api/debug/logs', (req, res) => {
-    try {
-        const logPath = path.join(__dirname, 'error_critical.log');
-        if (!fs.existsSync(logPath)) return res.json({ message: 'No hay logs de error aún.' });
-        const content = fs.readFileSync(logPath, 'utf8');
-        res.header('Content-Type', 'text/plain');
-        res.send(content.split('\n').slice(-100).join('\n'));
-    } catch (err) {
-        res.status(500).send(err.message);
-    }
-});
-
 // Archivos Estáticos (Fallback)
 app.use(express.static('public'));
 app.use('/uploads', express.static('uploads'));

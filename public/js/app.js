@@ -4890,7 +4890,7 @@ async function uploadPersonalFile() {
             throw new Error(result.detalle || result.error || 'No se pudo guardar');
         }
     } catch (err) {
-        showCustomModal('Error', err.message, 'error');
+        showCustomModal('Error', 'Falla en la comunicación con el servidor.', 'error');
     }
 }
 
