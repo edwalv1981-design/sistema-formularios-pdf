@@ -895,8 +895,8 @@ function renderContent(menuId, title) {
                 <h4 style="margin-bottom: 12px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">Lista de tus Operadores Adicionales</h4>
                 <div style="overflow-x:auto;">
                     <table style="width:100%; text-align:left; border-collapse:collapse;">
-                        <thead><tr style="border-bottom:1px solid var(--border-color); color:var(--text-muted);"><th style="padding:12px;">Identificación</th><th>Nombres</th><th>Estado</th><th>Fecha Alta</th></tr></thead>
-                        <tbody id="adds-table-body"><tr><td colspan="4" style="padding:12px; text-align:center;">Cargando...</td></tr></tbody>
+                        <thead><tr style="border-bottom:1px solid var(--border-color); color:var(--text-muted);"><th style="padding:12px;">Identificación</th><th>Nombres</th><th>Estado</th><th>Permisos</th><th>Fecha Alta</th></tr></thead>
+                        <tbody id="adds-table-body"><tr><td colspan="5" style="padding:12px; text-align:center;">Cargando...</td></tr></tbody>
                     </table>
                 </div>
             </div>
@@ -924,24 +924,6 @@ function renderContent(menuId, title) {
                             <tr><td colspan="4" style="padding:12px; text-align:center;">Cargando operadores...</td></tr>
                         </tbody>
                     </table>
-                </div>
-
-                <!-- Modal para Permisos de Formularios -->
-                <div id="forms-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:999; align-items:center; justify-content:center;">
-                    <div class="glass-card" style="width:400px; padding:30px; border-radius:12px;">
-                        <h3 style="margin-bottom:16px; color:var(--primary);"><i class="ph ph-list-checks"></i> Accesos a Plantillas</h3>
-                        <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:20px;">Selecciona los formularios adicionales a los que este operador tendrá acceso.</p>
-                        <form id="forms-perms-form" onsubmit="saveFormPermissionsModal(event)">
-                            <input type="hidden" id="forms-id-usuario" value="">
-                            <div id="forms-checkboxes" style="max-height:300px; overflow-y:auto; margin-bottom:20px; display:flex; flex-direction:column; gap:12px;">
-                                <!-- Checkboxes dinamicos -->
-                            </div>
-                            <div style="display:flex; gap:12px; justify-content:flex-end;">
-                                <button type="button" class="btn-ghost" onclick="closeFormPermissionsModal()">Cancelar</button>
-                                <button type="submit" class="btn-primary">Guardar Accesos</button>
-                            </div>
-                        </form>
-                    </div>
                 </div>
             </div>
         `;
@@ -1231,8 +1213,11 @@ async function fetchUsersList() {
                 if (showReject) {
                     authBtns += `<button onclick="rejectUser(${u.id})" class="btn-ghost" style="padding:4px 8px; border:1px solid #f59e0b; color:#f59e0b; margin-right:4px;" title="Rechazar">✖</button>`;
                 }
-                if (myUser.rol === 'MASTER' && u.bloqueado) {
-                    authBtns += `<button onclick="desbloquearUser(${u.id})" class="btn-ghost" style="padding:4px 8px; border:1px solid #10b981; color:#10b981; margin-right:4px;" title="Quitar Bloqueo de Acceso"><i class="ph-bold ph-lock-key-open"></i></button>`;
+                if (myUser.rol === 'MASTER') {
+                    if (u.bloqueado) {
+                        authBtns += `<button onclick="desbloquearUser(${u.id})" class="btn-ghost" style="padding:4px 8px; border:1px solid #10b981; color:#10b981; margin-right:4px;" title="Quitar Bloqueo de Acceso"><i class="ph-bold ph-lock-key-open"></i></button>`;
+                    }
+                    authBtns += `<button onclick="openFormPermissionsModal(${u.id})" class="btn-ghost" style="padding:4px 8px; border:1px solid #10b981; color:#10b981; margin-right:4px;" title="Configurar Plantillas"><i class="ph-bold ph-folder-open"></i></button>`;
                 }
                 authBtns += `<button onclick="deleteUser(${u.id})" class="btn-ghost" style="padding:4px 8px; border:1px solid #ef4444; color:#ef4444; margin-right:4px;" title="Eliminar">🗑️</button>`;
                 authBtns += `<button onclick="resetPassword(${u.id})" class="btn-ghost" style="padding:4px 8px; border:1px solid #6366f1; color:#6366f1;" title="Restablecer Contraseña"><i class="ph ph-key"></i></button>`;

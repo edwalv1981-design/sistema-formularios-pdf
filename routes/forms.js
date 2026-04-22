@@ -89,17 +89,39 @@ router.get('/', authenticateTokenOpcional, async (req, res) => {
 
         // Filtrar según el Rol
         if (req.user && req.user.rol === 'ADICIONAL') {
-            // Check Extended permissions from Checkboxes
-            const permQ = await db.query(`SELECT tipo_formulario FROM usuario_permisos_formulario WHERE id_usuario = $1`, [req.user.id]);
-            const permittedTypes = permQ.rows.map(r => r.tipo_formulario);
+            // REGLA TÉCNICA DE RAÍZ: El usuario Adicional HEREDA exactamente los mismos accesos que su administrador Empresa
+            const parentId = req.user.id_empresa; 
+            if(!parentId) {
+                rows = []; 
+            } else {
+                // 1. Obtener el 'tipo_formulario' base definido en la tabla de usuarios para el padre (Empresa)
+                const parentQuery = await db.query(`SELECT tipo_formulario FROM usuarios WHERE id = $1`, [parentId]);
+                const parentBaseType = parentQuery.rows.length ? parentQuery.rows[0].tipo_formulario : null;
 
-            // Filter strictly by granted permissions
-            rows = rows.filter(f => permittedTypes.includes(f.tipo));
-        } else if (req.user && req.user.rol === 'EMPRESA') {
-            // El administrador de empresa solo ve la plantilla original con la que se registró
+                // 2. Obtener la lista de formularios extendidos asignados al padre (Empresa) en 'usuario_permisos_formulario'
+                const parentExtendedPerms = await db.query(`SELECT tipo_formulario FROM usuario_permisos_formulario WHERE id_usuario = $1`, [parentId]);
+                const parentPermittedTypes = parentExtendedPerms.rows.map(r => r.tipo_formulario);
+
+                // 3. (OPCIONAL) Obtener permisos específicos del propio Adicional (si se le asignaron extras por error o diseño previo)
+                const selfExtendedPerms = await db.query(`SELECT tipo_formulario FROM usuario_permisos_formulario WHERE id_usuario = $1`, [req.user.id]);
+                const selfPermittedTypes = selfExtendedPerms.rows.map(r => r.tipo_formulario);
+
+                // Filtrado consolidated (Herencia Profunda)
+                rows = rows.filter(f => 
+                   f.tipo === parentBaseType || 
+                   parentPermittedTypes.includes(f.tipo) || 
+                   selfPermittedTypes.includes(f.tipo)
+                );
+            }
+        } else if (req.user && (req.user.rol === 'EMPRESA')) {
+            // El administrador de empresa ve su base + los asignados por el MASTER
             const usrQ = await db.query(`SELECT tipo_formulario FROM usuarios WHERE id = $1`, [req.user.id]);
             const baseType = usrQ.rows.length ? usrQ.rows[0].tipo_formulario : null;
-            rows = rows.filter(f => f.tipo === baseType);
+            
+            const extendedPerms = await db.query(`SELECT tipo_formulario FROM usuario_permisos_formulario WHERE id_usuario = $1`, [req.user.id]);
+            const permittedTypes = extendedPerms.rows.map(r => r.tipo_formulario);
+            
+            rows = rows.filter(f => f.tipo === baseType || permittedTypes.includes(f.tipo));
         }
 
         res.json(rows);
