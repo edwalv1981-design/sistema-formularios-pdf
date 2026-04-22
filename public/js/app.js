@@ -2926,8 +2926,6 @@ async function fetchMyAdicionalesForPerms() {
                 `<button onclick="togglePermiso(${d.id}, 'aprobar')" class="btn-ghost" style="color:var(--secondary); border:1px solid rgba(16,185,129,0.5); padding:6px 12px;"><i class="ph ph-lock-key-open"></i> Conceder Acceso</button>`;
                 
             actionBtn += ` <button onclick="resetPassword(${d.id})" class="btn-ghost" style="color:#6366f1; border:1px solid rgba(99,102,241,0.5); padding:6px 12px; margin-left:8px;" title="Actualizar Clave"><i class="ph ph-key"></i></button>`;
-            
-            actionBtn += ` <br><button onclick="openFormPermissionsModal(${d.id})" class="btn-primary" style="margin-top:8px; padding:6px 12px; font-size:0.85rem;"><i class="ph ph-folder-open"></i> Administrar Plantillas Autorizadas</button>`;
 
             html += `<tr style="border-bottom:1px solid rgba(255,255,255,0.05); vertical-align:middle;">
                 <td style="padding:16px; font-weight:500;">${d.nombres_completos}</td>
@@ -2978,80 +2976,6 @@ async function resetPassword(idUsuario) {
     }
 }
 
-async function openFormPermissionsModal(idUsuario) {
-    document.getElementById('forms-id-usuario').value = idUsuario;
-    const container = document.getElementById('forms-checkboxes');
-    container.innerHTML = 'Cargando...';
-    document.getElementById('forms-modal').style.display = 'flex';
-
-    try {
-        // Cargar todos los formularios
-        const resForms = await fetch(`/api/formularios`, {
-            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
-        });
-        if (!resForms.ok) throw new Error(`Status ${resForms.status}`);
-        
-        const allForms = await resForms.json();
-        if (!Array.isArray(allForms)) throw new Error('Catálogo no es un array');
-
-        // Cargar los permitidos actuales
-        const resPerms = await fetch(`/api/usuarios/${idUsuario}/permisos-formularios`, {
-            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
-        });
-        if (!resPerms.ok) throw new Error(`Perms Status ${resPerms.status}`);
-        
-        const permittedTypes = await resPerms.json();
-        const permsArray = Array.isArray(permittedTypes) ? permittedTypes : [];
-
-        let html = '';
-        allForms.forEach(f => {
-            const isChecked = permsArray.includes(f.tipo) ? 'checked' : '';
-            html += `
-                <label style="display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.05); padding:10px; border-radius:10px; cursor:pointer; border:1px solid rgba(255,255,255,0.1); width:100%;">
-                    <input type="checkbox" name="form_permitido" value="${f.tipo}" ${isChecked} style="width:18px; height:18px;">
-                    <span style="font-weight:500; font-size:0.95rem;">${f.tipo} <small style="display:block; color:var(--secondary); opacity:0.8;">Prefijo: ${f.prefijo}</small></span>
-                </label>
-            `;
-        });
-        container.innerHTML = html || '<div style="text-align:center; padding:20px; color:var(--text-muted);">No hay formularios disponibles para asignar.</div>';
-    } catch(err) {
-        console.error('[PERMS_MODAL_ERR]', err);
-        container.innerHTML = `<div style="color:#ef4444; text-align:center; padding:20px;">
-            <i class="ph ph-warning" style="font-size:2rem; margin-bottom:10px;"></i><br>
-            <b>Error de conexión</b><br>
-            <small>${err.message}</small><br>
-            <button onclick="openFormPermissionsModal(${idUsuario})" class="btn-primary" style="margin-top:15px; padding:6px 12px; font-size:0.8rem;">Reintentar</button>
-        </div>`;
-    }
-}
-
-function closeFormPermissionsModal() {
-    document.getElementById('forms-modal').style.display = 'none';
-}
-
-async function saveFormPermissionsModal(e) {
-    e.preventDefault();
-    const idUsuario = document.getElementById('forms-id-usuario').value;
-    const checks = document.querySelectorAll('input[name="form_permitido"]:checked');
-    const selectedForms = Array.from(checks).map(c => c.value);
-
-    try {
-        const res = await fetch(`/api/usuarios/${idUsuario}/permisos-formularios`, {
-            method: 'PUT',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + localStorage.getItem('token') 
-            },
-            body: JSON.stringify({ formularios: selectedForms })
-        });
-        const data = await res.json();
-        if (!res.ok) return alert(data.error);
-        alert(data.mensaje);
-        closeFormPermissionsModal();
-    } catch(err) {
-        alert('Error al guardar');
-    }
-}
 
 let currentBitaPage = 1;
 let currentBitaSearch = '';
