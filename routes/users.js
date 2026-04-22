@@ -311,11 +311,17 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 // ==== MÓDULO DE PERMISOS MULTIPLES (Formularios) ====
 // Consultar los permisos extendidos (sin incluir el base)
 router.get('/:id/permisos-formularios', authenticateToken, async (req, res) => {
+    const userId = parseInt(req.params.id);
+    if (isNaN(userId)) return res.status(400).json({ error: 'ID de usuario inválido' });
+
     try {
-        const { rows } = await db.query(`SELECT tipo_formulario FROM usuario_permisos_formulario WHERE id_usuario = $1`, [req.params.id]);
-        res.json(rows.map(r => r.tipo_formulario));
+        console.log(`[PERMS_REQ] Consultando permisos para usuario ID: ${userId}`);
+        const { rows } = await db.query(`SELECT "tipo_formulario" FROM "usuario_permisos_formulario" WHERE "id_usuario" = $1`, [userId]);
+        const list = rows.map(r => r.tipo_formulario);
+        res.json(list);
     } catch(err) {
-        res.status(500).json({ error: 'Error al consultar permisos extra' });
+        console.error('[PERMS_DB_ERROR]', err);
+        res.status(500).json({ error: 'Falla técnica al consultar la tabla de permisos extendidos', detalle: err.message });
     }
 });
 

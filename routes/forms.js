@@ -108,12 +108,16 @@ router.get('/', authenticateTokenOpcional, async (req, res) => {
                 const selfPermittedTypes = selfExtendedPerms.rows.map(r => r.tipo_formulario.toLowerCase().replace(/\s+/g, ' ').trim());
 
                 const normParentBase = parentBaseType ? parentBaseType.toLowerCase().replace(/\s+/g, ' ').trim() : null;
+                console.log(`[DEBUG_FORMS] ADICIONAL: ${req.user.id}, BASE: ${normParentBase}`);
 
                 rows = rows.filter(f => {
                    const normForm = f.tipo.toLowerCase().replace(/\s+/g, ' ').trim();
                    const isBase = normForm === normParentBase;
                    const inParentPerms = parentPermittedTypes.includes(normForm);
                    const inSelfPerms = selfPermittedTypes.includes(normForm);
+                   
+                   if (isBase) console.log(`[DEBUG_FORMS] MATCH FOUND: ${f.tipo}`);
+                   
                    return isBase || inParentPerms || inSelfPerms;
                 });
                 console.log(`[FORMS_RESULT] Adicional ${req.user.id} heredó ${rows.length} formularios de empresa ${parentId}`);
@@ -126,10 +130,13 @@ router.get('/', authenticateTokenOpcional, async (req, res) => {
             const permittedTypes = extendedPerms.rows.map(r => r.tipo_formulario.toLowerCase().replace(/\s+/g, ' ').trim());
             
             const normBase = baseType ? baseType.toLowerCase().replace(/\s+/g, ' ').trim() : null;
+            console.log(`[DEBUG_FORMS] EMPRESA: ${req.user.id}, BASE: ${normBase}`);
 
             rows = rows.filter(f => {
                 const normForm = f.tipo.toLowerCase().replace(/\s+/g, ' ').trim();
-                return normForm === normBase || permittedTypes.includes(normForm);
+                const isMatch = normForm === normBase || permittedTypes.includes(normForm);
+                if (isMatch) console.log(`[DEBUG_FORMS] MATCH FOUND FOR EMPRESA: ${f.tipo}`);
+                return isMatch;
             });
             console.log(`[FORMS_RESULT] Empresa ${req.user.id} tiene acceso a ${rows.length} formularios`);
         } else if (req.user && req.user.rol === 'MASTER') {
