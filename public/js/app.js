@@ -4798,7 +4798,8 @@ function renderPersonalDocsView(container) {
                         <tr style="text-align:left; border-bottom:2px solid var(--border-color);">
                             <th style="padding:12px;">Categoría</th>
                             <th style="padding:12px;">Nombre de Archivo</th>
-                            <th style="padding:12px;">Fecha Carga</th>
+                            <th style="padding:12px;">Estado</th>
+                            <th style="padding:12px;">Expiración</th>
                             <th style="padding:12px; text-align:right;">Acciones</th>
                         </tr>
                     </thead>
@@ -4813,7 +4814,7 @@ function renderPersonalDocsView(container) {
 async function fetchPersonalDocs() {
     const tbody = document.getElementById('personal-docs-table-body');
     if(!tbody) return;
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">Accediendo al servidor...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px;">Accediendo al servidor...</td></tr>';
 
     try {
         const response = await fetch('/api/documentacion-personal', {
@@ -4823,17 +4824,22 @@ async function fetchPersonalDocs() {
         tbody.innerHTML = '';
 
         if (!data || data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:40px; color:var(--text-muted);">No tiene documentos cargados actualmente.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:40px; color:var(--text-muted);">No tiene documentos cargados actualmente.</td></tr>';
             return;
         }
 
         data.forEach(doc => {
             const tr = document.createElement('tr');
             tr.style.borderBottom = '1px solid var(--border-color)';
+            
+            const badgeClass = doc.estado_vigencia === 'VIGENTE' ? 'badge-success' : 'badge-danger';
+            const displayDate = doc.fecha_expiracion ? new Date(doc.fecha_expiracion).toLocaleDateString() : 'N/A';
+
             tr.innerHTML = `
                 <td style="padding:12px;"><span class="badge-blue">${doc.tipo}</span></td>
                 <td style="padding:12px;">${doc.nombre_archivo}</td>
-                <td style="padding:12px; color:var(--text-muted); font-size:11px;">${new Date(doc.fecha_carga).toLocaleString()}</td>
+                <td style="padding:12px;"><span class="${badgeClass}">${doc.estado_vigencia}</span></td>
+                <td style="padding:12px; color:var(--text-muted); font-size:11px;">${displayDate}</td>
                 <td style="padding:12px; text-align:right;">
                     <button class="action-btn" onclick="downloadPersonalDoc('${doc.id}', '${doc.nombre_archivo}')" title="Descargar"><i class="ph ph-download-simple"></i></button>
                     <button class="action-btn btn-danger" onclick="deletePersonalDoc('${doc.id}')" title="Eliminar"><i class="ph ph-trash"></i></button>
@@ -4859,7 +4865,12 @@ function showUploadPersonalModal() {
                 </select>
             </div>
             <div class="form-group">
+                <label style="color:white; display:block; margin-bottom:10px;">Archivo</label>
                 <input type="file" id="doc-personal-file" style="color:white;">
+            </div>
+            <div class="form-group">
+                <label style="color:white; display:block; margin-bottom:10px;">Fecha de Expiración</label>
+                <input type="date" id="doc-personal-expiry" style="width:100%; padding:10px; background:#0f172a; color:white; border:1px solid var(--border-color); border-radius:6px;">
             </div>
             <button class="btn-primary" onclick="uploadPersonalFile()" style="width:100%"><i class="ph ph-upload"></i> Subir Documento</button>
         </div>
@@ -4875,6 +4886,9 @@ async function uploadPersonalFile() {
     const formData = new FormData();
     formData.append('archivo', fileInput.files[0]);
     formData.append('tipo', typeInput.value);
+    
+    const expiryDate = document.getElementById('doc-personal-expiry').value;
+    if(expiryDate) formData.append('fecha_expiracion', expiryDate);
 
     try {
         const res = await fetch('/api/documentacion-personal/upload', {

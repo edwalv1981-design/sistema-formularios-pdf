@@ -36,26 +36,34 @@ const upload = multer({
 // SUBIR DOCUMENTO PERSONAL
 router.post('/upload', authenticateToken, upload.single('archivo'), async (req, res, next) => {
     try {
-        const { tipo } = req.body;
+        const { tipo, fecha_expiracion } = req.body;
         if (!req.file) return res.status(400).json({ error: 'No se adjuntó archivo' });
         
         const userId = req.user.id;
         const idEmpresa = req.user.id_empresa || userId;
         const rutaUrl = '/uploads/personal/' + req.file.filename;
 
+        // LÓGICA DE VIGENCIA AUTOMÁTICA
+        let estadoVigencia = 'NO DEFINIDO';
+        if (fecha_expiracion) {
+            const expDate = new Date(fecha_expiracion + 'T23:59:59'); // Fin del día
+            const today = new Date();
+            estadoVigencia = expDate >= today ? 'VIGENTE' : 'EXPIRADO';
+        }
+
         const archivoBase64 = fs.readFileSync(req.file.path).toString('base64');
         const result = await db.query(
-            'INSERT INTO documentos_personales (user_id, tipo, nombre_archivo, ruta_archivo, fecha_carga, estado_vigencia, archivo_base64) VALUES ($1, $2, $3, $4, NOW(), \'NO DETECTADO\', $5) RETURNING id',
-            [userId, tipo, req.file.originalname, rutaUrl, archivoBase64]
+            'INSERT INTO documentos_personales (user_id, tipo, nombre_archivo, ruta_archivo, fecha_carga, estado_vigencia, fecha_expiracion, archivo_base64) VALUES ($1, $2, $3, $4, NOW(), $5, $6, $7) RETURNING id',
+            [userId, tipo, req.file.originalname, rutaUrl, estadoVigencia, fecha_expiracion || null, archivoBase64]
         );
         const docId = result.rows[0].id;
 
         // Bitácora
         await db.query(`INSERT INTO bitacora (id_usuario, id_empresa_contexto, accion, detalle) VALUES ($1, $2, $3, $4)`,
-            [userId, idEmpresa, 'SUBIR_DOC_PERSONAL', `Se subió documento tipo ${tipo}: ${req.file.originalname}`]);
+            [userId, idEmpresa, 'SUBIR_DOC_PERSONAL', `Se subió documento tipo ${tipo}: ${req.file.originalname} (Estado: ${estadoVigencia})`]);
 
-        // Retornamos la respuesta rápida
-        res.json({ message: 'Documento subido con éxito', estado: 'NO DETECTADO' });
+        res.json({ message: 'Documento procesado con éxito', estado: estadoVigencia });
+    } catch (err) {
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Falla en el servidor de base de datos' });
