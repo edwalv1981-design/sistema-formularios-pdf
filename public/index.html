@@ -302,8 +302,45 @@
         </div>
     </div>
 
+    <!-- ASISTENTE DE SOPORTE VIRTUAL -->
+    <div id="support-agent-ui">
+        <div class="support-agent-trigger" onclick="toggleSupportWindow()">
+            <i class="ph-bold ph-chats-teardrop"></i>
+        </div>
+
+        <div class="support-window" id="support-window">
+            <div class="support-header">
+                <div class="avatar">
+                    <i class="ph-bold ph-robot" style="color:white; font-size:24px;"></i>
+                </div>
+                <div style="flex:1;">
+                    <h4 style="margin:0; font-size:14px;">Guía SAD Digital</h4>
+                    <p style="margin:0; font-size:11px; color:#10b981;">● En línea ahora</p>
+                </div>
+                <button onclick="toggleSupportWindow()" style="background:transparent; border:none; color:white; cursor:pointer;"><i class="ph ph-x" style="font-size:20px;"></i></button>
+            </div>
+            
+            <div class="support-content" id="support-chat-content">
+                <div class="support-bubble bubble-ai">
+                    👋 ¡Hola! Soy tu asistente de SAD Digital. Estoy aquí para ayudarte a dominar la plataforma. ¿En qué puedo apoyarte hoy?
+                </div>
+                
+                <div class="support-options">
+                    <button class="support-opt-btn" onclick="askSupport('create_user')">¿Cómo creo un nuevo usuario?</button>
+                    <button class="support-opt-btn" onclick="askSupport('edit_form')">¿Cómo edito un formulario PDF?</button>
+                    <button class="support-opt-btn" onclick="askSupport('upload_docs')">¿Cómo subo documentos firmados?</button>
+                    <button class="support-opt-btn" onclick="askSupport('permissions')">Sobre los permisos generales</button>
+                </div>
+            </div>
+
+            <div class="support-footer">
+                <p>© 2026 SAD Digital • Centro de Ayuda</p>
+            </div>
+        </div>
+    </div>
+
     <!-- Script Principal -->
 
-    <script src="js/core_v10.js?v=12.0.3"></script>
+    <script src="js/core_v10.js?v=12.1.0"></script>
 </body>
 </html>

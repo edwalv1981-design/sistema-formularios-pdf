@@ -5075,3 +5075,51 @@ async function clearAllNotifications() {
 }
 
 
+function toggleSupportWindow() {
+    const win = document.getElementById('support-window');
+    if(!win) return;
+    const isVisible = win.style.display === 'flex';
+    win.style.display = isVisible ? 'none' : 'flex';
+}
+
+function askSupport(topic) {
+    const chat = document.getElementById('support-chat-content');
+    if(!chat) return;
+    
+    // User Question Bubble
+    const userMsg = document.createElement('div');
+    userMsg.className = 'support-bubble';
+    userMsg.style.cssText = 'background:var(--primary); color:white; align-self:flex-end; border-bottom-right-radius:4px; margin-top:8px;';
+    
+    let text = '';
+    let response = '';
+    
+    if (topic === 'create_user') {
+        text = '¿Cómo creo un nuevo usuario?';
+        response = 'Para crear un usuario, ve al menú <b>Usuarios</b>. Si eres Master, puedes crear Empresas. Si eres Empresa, puedes crear Operadores Adicionales. Completa el formulario y presiona el botón de habilitar cuenta.';
+    } else if (topic === 'edit_form') {
+        text = '¿Cómo edito un formulario PDF?';
+        response = 'Ve a <b>Editar Formularios</b>, selecciona una plantilla y usa el editor visual. Puedes arrastrar campos y escribir texto. Al finalizar, presiona "Guardar Edición".';
+    } else if (topic === 'upload_docs') {
+        text = '¿Cómo subo documentos firmados?';
+        response = 'Usa la opción <b>Subir Información</b> > "Subir Formularios Firmados". Selecciona tu PDF y cárgalo al sistema.';
+    } else if (topic === 'permissions') {
+        text = 'Sobre los permisos generales';
+        response = 'Ahora las Empresas y Operadores pueden ver todas las plantillas subidas por el Máster de forma automática.';
+    }
+    
+    userMsg.innerHTML = text;
+    chat.appendChild(userMsg);
+    
+    // AI Response Bubble
+    setTimeout(() => {
+        const aiMsg = document.createElement('div');
+        aiMsg.className = 'support-bubble bubble-ai';
+        aiMsg.style.marginTop = '8px';
+        aiMsg.innerHTML = response;
+        chat.appendChild(aiMsg);
+        chat.scrollTop = chat.scrollHeight;
+    }, 600);
+    
+    chat.scrollTop = chat.scrollHeight;
+}
