@@ -310,59 +310,9 @@ router.delete('/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// ==== MÓDULO DE PERMISOS MULTIPLES (Formularios) ====
-// Consultar los permisos extendidos (sin incluir el base)
-router.get('/:id/permisos-formularios', authenticateToken, async (req, res) => {
-    const userId = parseInt(req.params.id);
-    if (isNaN(userId)) return res.status(400).json({ error: 'ID de usuario inválido' });
 
-    try {
-        console.log(`[PERMS_REQ] Consultando permisos para usuario ID: ${userId}`);
-        const { rows } = await db.query(`SELECT "tipo_formulario" FROM "usuario_permisos_formulario" WHERE "id_usuario" = $1`, [userId]);
-        const list = rows.map(r => r.tipo_formulario);
-        res.json(list);
-    } catch(err) {
-        console.error('[PERMS_DB_ERROR]', err);
-        res.status(500).json({ error: 'Falla técnica al consultar la tabla de permisos extendidos', detalle: err.message });
-    }
-});
+// ==== FIN DE GESTIÓN DE SEGURIDAD ====
 
-// Sobreescribir permisos extendidos
-router.put('/:id/permisos-formularios', authenticateToken, async (req, res) => {
-    // Validar jerarquia: un EMPRESA puede cambiar esto para SUS Adicionales.
-    if (req.user.rol === 'ADICIONAL') return res.status(403).json({ error: 'Permisos insuficientes' });
-
-    const { formularios } = req.body; // array de strings
-    if (!Array.isArray(formularios)) return res.status(400).json({ error: 'Formato incorrecto' });
-
-    try {
-        const { rows } = await db.query(`SELECT id_rol, id_empresa, identificacion FROM usuarios WHERE id = $1`, [req.params.id]);
-        if (rows.length === 0) return res.status(404).json({ error: 'Usuario no encontrado' });
-        
-        const target = rows[0];
-        if (req.user.rol === 'EMPRESA') {
-             const miEmpresa = req.user.id_empresa || req.user.id;
-             if (target.id_empresa !== miEmpresa || target.id_rol !== 3) {
-                 return res.status(403).json({ error: 'Solo puede modificar plantillas de sus propios Operadores' });
-             }
-        }
-
-        // Wipe old
-        await db.query(`DELETE FROM usuario_permisos_formulario WHERE id_usuario = $1`, [req.params.id]);
-
-        // Insert new array
-        for (let i = 0; i < formularios.length; i++) {
-            await db.query(`INSERT INTO usuario_permisos_formulario (id_usuario, tipo_formulario) VALUES ($1, $2)`, [req.params.id, formularios[i]]);
-        }
-        
-        await db.query(`INSERT INTO bitacora (id_usuario, accion, detalle) VALUES ($1, $2, $3)`,
-              [req.user.id, 'CAMBIO_PERMISOS', `Asignación masiva de ${formularios.length} plantillas para el usuario: ${target.identificacion}`]);
-
-        res.json({ mensaje: 'Permisos de Plantillas actualizados exitosamente' });
-    } catch(err) {
-        res.status(500).json({ error: 'Error re-escribiendo permisos en la DB' });
-    }
-});
 
 const nodemailer = require('nodemailer');
 

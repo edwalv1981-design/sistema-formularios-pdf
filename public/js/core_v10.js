@@ -905,31 +905,6 @@ function renderContent(menuId, title) {
         document.getElementById('formAdicional').addEventListener('submit', handleAdicionalUserUpload);
         fetchMyAdicionales();
 
-    } else if (menuId === 'val-perms') {
-        content.innerHTML = `
-            <div class="glass-card" style="padding:40px;">
-                <h3 style="margin-bottom:20px; color:var(--primary);"><i class="ph-duotone ph-shield-check"></i> Permisos Adicionales</h3>
-                <p style="color:var(--text-muted); margin-bottom: 24px;">Administre los niveles de acceso y estado (Activo/Inactivo) de sus Operadores Adicionales. Si revoca el permiso de un operador, este no podrá ingresar al sistema ni digitalizar documentos.</p>
-                
-                <div style="background:var(--bg-dark); border-radius:12px; border:1px solid rgba(255,255,255,0.05); overflow:hidden;">
-                    <table style="width:100%; text-align:left; border-collapse:collapse; font-size:0.9rem;">
-                        <thead style="background:rgba(0,0,0,0.3);">
-                            <tr style="border-bottom:1px solid var(--border-color); color:var(--text-muted);">
-                                <th style="padding:16px;">Operador</th>
-                                <th style="padding:16px;">Identificación</th>
-                                <th style="padding:16px;">Estado Actual</th>
-                                <th style="padding:16px;">Acción de Permiso</th>
-                            </tr>
-                        </thead>
-                        <tbody id="perms-table-body">
-                            <tr><td colspan="4" style="padding:12px; text-align:center;">Cargando operadores...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        `;
-        fetchMyAdicionalesForPerms();
-
     } else if (menuId === 'val-perfil-data') {
         const user = getSafeUser();
         content.innerHTML = `
@@ -1268,26 +1243,6 @@ async function rejectUser(id) {
         fetchUsersList(); // Recargar tabla
     } catch(err) {
         alert('Error al rechazar');
-    }
-}
-
-async function deleteUser(id) {
-    if (!confirm('¿Estás seguro de eliminar COMPLETA e irreversiblemente este usuario?')) return;
-    try {
-        const res = await fetch(`/api/usuarios/${id}`, {
-            method: 'DELETE',
-            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
-        });
-        const data = await res.json();
-        if (!res.ok) {
-            alert('Falla administrativa: ' + (data.error || 'Error desconocido'));
-            return;
-        }
-        alert(data.mensaje || 'Usuario eliminado con éxito.');
-        fetchUsersList(); // Recargar tabla
-    } catch(err) {
-        console.error('[DELETE_USER_ERR]', err);
-        alert('Falla de red o colapso en el servidor al intentar eliminar.');
     }
 }
 
@@ -2906,41 +2861,16 @@ async function fetchMyAdicionales() {
                 <td>${d.nombres_completos}</td>
                 <td>${statusText}</td>
                 <td style="color:var(--text-muted); font-size:0.85rem;">${new Date(d.fecha_registro).toLocaleString()}</td>
+                <td style="white-space:nowrap;">
+                    <button onclick="resetPassword(${d.id})" class="btn-ghost" style="padding:4px 8px; border:1px solid #6366f1; color:#6366f1; margin-right:4px;" title="Resetear Clave"><i class="ph ph-key"></i></button>
+                    ${d.estado === 'ACTIVO' || d.estado === 'APROBADO' ? 
+                        `<button onclick="togglePermiso(${d.id}, 'rechazar')" class="btn-ghost" style="padding:4px 8px; border:1px solid #ef4444; color:#ef4444;" title="Revocar Acceso">✖</button>` :
+                        `<button onclick="togglePermiso(${d.id}, 'aprobar')" class="btn-ghost" style="padding:4px 8px; border:1px solid #10b981; color:#10b981;" title="Conceder Acceso">✔️</button>`
+                    }
+                </td>
             </tr>`;
         });
-        tbody.innerHTML = html || '<tr><td colspan="4" style="text-align:center; padding:12px;">Actualmente no tiene Operadores Adicionales.</td></tr>';
-    } catch(err) {}
-}
-
-async function fetchMyAdicionalesForPerms() {
-    try {
-        const res = await fetch(`/api/usuarios`, { 
-            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') } 
-        });
-        const docs = await res.json();
-        const tbody = document.getElementById('perms-table-body');
-        if(!tbody) return;
-
-        let html = '';
-        docs.forEach(d => {
-            if(d.rol !== 'ADICIONAL') return;
-            
-            let statusBadge = d.estado === 'APROBADO' ? '<span style="background:rgba(16,185,129,0.2); color:var(--secondary); padding:4px 8px; border-radius:4px; font-weight:bold;">Acceso Permitido</span>' : '<span style="background:rgba(239,68,68,0.2); color:#ef4444; padding:4px 8px; border-radius:4px; font-weight:bold;">Acceso Revocado</span>';
-            
-            let actionBtn = d.estado === 'APROBADO' ? 
-                `<button onclick="togglePermiso(${d.id}, 'rechazar')" class="btn-ghost" style="color:#ef4444; border:1px solid rgba(239,68,68,0.5); padding:6px 12px;"><i class="ph ph-lock-key"></i> Revocar Acceso</button>` :
-                `<button onclick="togglePermiso(${d.id}, 'aprobar')" class="btn-ghost" style="color:var(--secondary); border:1px solid rgba(16,185,129,0.5); padding:6px 12px;"><i class="ph ph-lock-key-open"></i> Conceder Acceso</button>`;
-                
-            actionBtn += ` <button onclick="resetPassword(${d.id})" class="btn-ghost" style="color:#6366f1; border:1px solid rgba(99,102,241,0.5); padding:6px 12px; margin-left:8px;" title="Actualizar Clave"><i class="ph ph-key"></i></button>`;
-
-            html += `<tr style="border-bottom:1px solid rgba(255,255,255,0.05); vertical-align:middle;">
-                <td style="padding:16px; font-weight:500;">${d.nombres_completos}</td>
-                <td style="padding:16px; font-family:monospace; color:var(--primary); font-size:1.1rem;">${d.identificacion}</td>
-                <td style="padding:16px;">${statusBadge}</td>
-                <td style="padding:16px;">${actionBtn}</td>
-            </tr>`;
-        });
-        tbody.innerHTML = html || '<tr><td colspan="4" style="text-align:center; padding:12px;">Actualmente no tiene Operadores evaluables.</td></tr>';
+        tbody.innerHTML = html || '<tr><td colspan="5" style="text-align:center; padding:12px;">Actualmente no tiene Operadores Adicionales.</td></tr>';
     } catch(err) {}
 }
 
@@ -2953,11 +2883,12 @@ async function togglePermiso(idUsuario, accion) {
         });
         const data = await res.json();
         if(!res.ok) return alert(data.error);
-        fetchMyAdicionalesForPerms();
+        fetchMyAdicionales();
     } catch(err) {
         alert('Error en conexión');
     }
 }
+
 
 // ====== MODULO BITACORA INMUTABLE ======
 async function resetPassword(idUsuario) {
