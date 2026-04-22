@@ -4582,7 +4582,7 @@ async function downloadEdicionPDF(id) {
         return;
     }
     
-    showCustomModal('Exportación Quirúrgica', 'Fusionando capas binarias y generando documento final...', 'info');
+    // showCustomModal('Exportación Quirúrgica', 'Fusionando capas binarias y generando documento final...', 'info');
     
     try {
         const token = localStorage.getItem('token');
