@@ -58,7 +58,7 @@ router.post('/upload', authenticateToken, upload.single('archivo'), async (req, 
         res.json({ message: 'Documento subido con éxito', estado: 'NO DETECTADO' });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: 'Error al subir documento' });
+        res.status(500).json({ error: 'Falla en el servidor de base de datos', detalle: err.message });
     }
 });
 

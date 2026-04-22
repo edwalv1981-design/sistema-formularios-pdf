@@ -4882,14 +4882,15 @@ async function uploadPersonalFile() {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
             body: formData
         });
+        const result = await res.json();
         if(res.ok) {
             showCustomModal('Éxito', 'Documento guardado en la base de datos.', 'success');
             fetchPersonalDocs();
         } else {
-            throw new Error('No se pudo guardar');
+            throw new Error(result.detalle || result.error || 'No se pudo guardar');
         }
     } catch (err) {
-        showCustomModal('Error', 'Falla en el servidor de base de datos.', 'error');
+        showCustomModal('Error', err.message, 'error');
     }
 }
 
