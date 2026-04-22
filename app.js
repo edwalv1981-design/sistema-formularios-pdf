@@ -50,6 +50,17 @@ async function initDB() {
         `);
         await db.query(`ALTER TABLE formularios_firmados ADD COLUMN IF NOT EXISTS validador_metadata JSONB`);
         
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS bitacora (
+                id SERIAL PRIMARY KEY,
+                id_usuario INTEGER,
+                id_empresa_contexto INTEGER,
+                accion VARCHAR(100),
+                detalle TEXT,
+                fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        
         console.log('Esquema de base de datos sincronizado.');
     } catch (err) {
         console.error('ERROR CRÍTICO EN SINCRONIZACIÓN DB:', err);
