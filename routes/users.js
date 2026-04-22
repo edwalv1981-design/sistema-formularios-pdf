@@ -120,16 +120,25 @@ router.post('/adicional', authenticateToken, async (req, res) => {
     if (req.user.rol !== 'EMPRESA') return res.status(403).json({ error: 'Solo empresas pueden crear operativos adicionales' });
     const { nombres_completos, identificacion, direccion, telefono, password } = req.body;
     
-    try {
+        console.log(`[CREATE_ADD] Empresa ${req.user.id} intentando crear operador: ${identificacion}`);
+        
+        const resRole = await db.query(`SELECT id FROM roles WHERE nombre = 'ADICIONAL'`);
+        if (resRole.rows.length === 0) {
+            console.error('[CREATE_ADD_ERR] No se encontró el rol ADICIONAL en la base de datos.');
+            return res.status(500).json({ error: 'Configuración de roles incompleta en el servidor.' });
+        }
+        const id_rol_asignado = resRole.rows[0].id;
+        const id_empresa_asignado = req.user.id_empresa || req.user.id; 
+
+        const resEmp = await db.query(`SELECT codigo_unico FROM usuarios WHERE id = $1`, [id_empresa_asignado]);
+        if (resEmp.rows.length === 0) {
+            console.error(`[CREATE_ADD_ERR] No se encontró la empresa matriz con ID ${id_empresa_asignado}`);
+            return res.status(404).json({ error: 'No se pudo localizar la cuenta de empresa matriz.' });
+        }
+        const codigo_heredado = resEmp.rows[0].codigo_unico || 'SIN_CODIGO';
+
         const salt = await bcrypt.genSalt(10);
         const password_hash = await bcrypt.hash(password, salt);
-        const resRole = await db.query(`SELECT id FROM roles WHERE nombre = 'ADICIONAL'`);
-        const id_rol_asignado = resRole.rows[0].id;
-        const id_empresa_asignado = req.user.id_empresa || req.user.id; // Su misma empresa
-        
-        // Obtener el código único de la empresa para heredar al adicional
-        const resEmp = await db.query(`SELECT codigo_unico FROM usuarios WHERE id = $1`, [id_empresa_asignado]);
-        const codigo_heredado = resEmp.rows[0].codigo_unico;
 
         const sql = `INSERT INTO usuarios 
           (nombres_completos, identificacion, direccion, telefono, id_rol, id_empresa, password_hash, aprobado, estado, codigo_unico) 
@@ -138,13 +147,16 @@ router.post('/adicional', authenticateToken, async (req, res) => {
         const params = [nombres_completos, identificacion, direccion, telefono, id_rol_asignado, id_empresa_asignado, password_hash, codigo_heredado];
         const { rows } = await db.query(sql, params);
 
-        await db.query(`INSERT INTO bitacora (id_usuario, id_empresa_contexto, accion, detalle) VALUES ($1, $2, $3, $4)`,
-          [req.user.id, id_empresa_asignado, 'CREAR_ADICIONAL', `Operador Adicional ${identificacion} creado nativamente`]);
+        console.log(`[CREATE_ADD_OK] Operador ${identificacion} creado exitosamente con ID ${rows[0].id}`);
 
-        res.status(201).json({ mensaje: 'Operador Adicional registrado y habilitado instantáneamente' });
+        await db.query(`INSERT INTO bitacora (id_usuario, id_empresa_contexto, accion, detalle) VALUES ($1, $2, $3, $4)`,
+          [req.user.id, id_empresa_asignado, 'CREAR_ADICIONAL', `Operador Adicional ${identificacion} creado exitosamente`]);
+
+        res.status(201).json({ mensaje: 'Operador Adicional registrado y habilitado exitosamente.' });
     } catch(err) {
+        console.error('[CREATE_ADD_CRITICAL]', err);
         if(err.code === '23505') return res.status(400).json({ error: 'La identificación ya está registrada en el sistema.' });
-        res.status(500).json({ error: 'Error interno conectando con el servidor' });
+        res.status(500).json({ error: 'Falla técnica al procesar el alta: ' + err.message });
     }
 });
 
