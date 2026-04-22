@@ -156,7 +156,11 @@ router.post('/adicional', authenticateToken, async (req, res) => {
         res.status(201).json({ mensaje: 'Operador Adicional registrado y habilitado exitosamente.' });
     } catch(err) {
         console.error('[CREATE_ADD_CRITICAL]', err);
-        if(err.code === '23505') return res.status(400).json({ error: 'La identificación ya está registrada en el sistema.' });
+        if(err.code === '23505') {
+            const detail = err.detail || '';
+            const field = detail.includes('identificacion') ? 'Identificación' : (detail.includes('email') ? 'Email' : 'un campo único');
+            return res.status(400).json({ error: `La ${field} ya está registrada en el sistema.` });
+        }
         res.status(500).json({ error: 'Falla técnica al procesar el alta: ' + err.message });
     }
 });
