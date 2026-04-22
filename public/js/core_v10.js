@@ -1191,6 +1191,7 @@ async function fetchUsersList() {
                 if (showReject) {
                     authBtns += `<button onclick="rejectUser(${u.id})" class="btn-ghost" style="padding:4px 8px; border:1px solid #f59e0b; color:#f59e0b; margin-right:4px;" title="Rechazar">✖</button>`;
                 }
+                authBtns += `<button onclick="deleteUser(${u.id})" class="btn-ghost" style="padding:4px 8px; border:1px solid #ef4444; color:#ef4444; margin-right:4px;" title="Eliminar definitivamente"><i class="ph ph-trash"></i></button>`;
                 if (myUser.rol === 'MASTER') {
                     if (u.bloqueado) {
                         authBtns += `<button onclick="desbloquearUser(${u.id})" class="btn-ghost" style="padding:4px 8px; border:1px solid #10b981; color:#10b981; margin-right:4px;" title="Quitar Bloqueo de Acceso"><i class="ph-bold ph-lock-key-open"></i></button>`;
@@ -1218,6 +1219,35 @@ async function fetchUsersList() {
         if(statRejected) statRejected.innerText = rejected;
     } catch(err) {
         document.getElementById('users-table-body').innerHTML = '<tr><td colspan="6" style="color:red; text-align:center;">Error cargando datos</td></tr>';
+    }
+}
+
+async function deleteUser(userId) {
+    if(!confirm('¿Está ABSOLUTAMENTE seguro de eliminar este usuario? Esta acción es irreversible en la interfaz.')) return;
+    
+    showCustomModal('Procesando...', 'Eliminando credenciales y registros del sistema...', 'info');
+    
+    try {
+        const res = await fetch(`/api/usuarios/${userId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+        });
+        const data = await res.json();
+        
+        if(!res.ok) {
+            showCustomModal('Error de Eliminación', data.error || 'No se pudo completar la baja.', 'error');
+            return;
+        }
+        
+        showCustomModal('Usuario Eliminado', 'La cuenta ha sido dada de baja exitosamente del sistema.', 'success');
+        
+        // Recargar la vista dependiendo de donde estemos
+        const user = getSafeUser();
+        if(user.rol === 'MASTER') fetchUsersList();
+        else fetchMyAdicionales();
+        
+    } catch(err) {
+        showCustomModal('Error Técnico', 'No hay conexión con el servidor de seguridad.', 'error');
     }
 }
 
@@ -2864,9 +2894,10 @@ async function fetchMyAdicionales() {
                 <td style="white-space:nowrap;">
                     <button onclick="resetPassword(${d.id})" class="btn-ghost" style="padding:4px 8px; border:1px solid #6366f1; color:#6366f1; margin-right:4px;" title="Resetear Clave"><i class="ph ph-key"></i></button>
                     ${d.estado === 'ACTIVO' || d.estado === 'APROBADO' ? 
-                        `<button onclick="togglePermiso(${d.id}, 'rechazar')" class="btn-ghost" style="padding:4px 8px; border:1px solid #ef4444; color:#ef4444;" title="Revocar Acceso">✖</button>` :
-                        `<button onclick="togglePermiso(${d.id}, 'aprobar')" class="btn-ghost" style="padding:4px 8px; border:1px solid #10b981; color:#10b981;" title="Conceder Acceso">✔️</button>`
+                        `<button onclick="togglePermiso(${d.id}, 'rechazar')" class="btn-ghost" style="padding:4px 8px; border:1px solid #ef4444; color:#ef4444; margin-right:4px;" title="Revocar Acceso">✖</button>` :
+                        `<button onclick="togglePermiso(${d.id}, 'aprobar')" class="btn-ghost" style="padding:4px 8px; border:1px solid #10b981; color:#10b981; margin-right:4px;" title="Conceder Acceso">✔️</button>`
                     }
+                    <button onclick="deleteUser(${d.id})" class="btn-ghost" style="padding:4px 8px; border:1px solid #ef4444; color:#ef4444;" title="Eliminar Usuario"><i class="ph ph-trash"></i></button>
                 </td>
             </tr>`;
         });
